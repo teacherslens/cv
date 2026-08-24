@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chris Davis — International Educator &amp; Curriculum Designer</title>
+<meta name="description" content="Panama City–based international educator, curriculum designer, and library media specialist with 25 years of experience across elementary and middle school, EAL, media literacy, and educational technology.">
+<meta property="og:title" content="Chris Davis — International Educator &amp; Curriculum Designer">
+<meta property="og:description" content="25 years across elementary and middle school, EAL, media and information literacy, and educational technology. Panama City.">
+<meta property="og:type" content="profile">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0d;
+  --bg-soft:#131316;
+  --ink:#ece8e0;
+  --ink-dim:#a8a49b;
+  --ink-faint:#6f6c65;
+  --accent:#b9cf80;
+  --rule:rgba(255,255,255,.10);
+  --rule-soft:rgba(255,255,255,.055);
+  --serif:"Instrument Serif",ui-serif,Georgia,"Times New Roman",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --wrap:940px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-weight:300;font-size:16px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 28px}
+a{color:inherit;text-decoration:none}
+p{margin:0 0 1em}
+
+/* ---------- sticky bar ---------- */
+.bar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(11,11,13,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--rule-soft);
+  transition:opacity .3s ease;
+}
+.bar-in{display:flex;align-items:center;justify-content:space-between;gap:20px;height:58px}
+.bar-name{font-family:var(--serif);font-size:19px;letter-spacing:.01em}
+.bar nav{display:flex;gap:22px;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-dim)}
+.bar nav a{transition:color .2s}
+.bar nav a:hover{color:var(--accent)}
+@media(max-width:820px){.bar nav{display:none}}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.055em;text-transform:uppercase;
+  padding:11px 20px;border-radius:999px;
+  border:1px solid var(--accent);color:var(--accent);
+  transition:background .22s ease,color .22s ease;white-space:nowrap;
+}
+.btn:hover{background:var(--accent);color:#0b0b0d}
+.btn svg{width:14px;height:14px;flex:none}
+.btn-sm{padding:8px 16px;font-size:11.5px}
+
+/* ---------- hero ---------- */
+.hero{padding:88px 0 64px;border-bottom:1px solid var(--rule)}
+.hero-grid{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:center}
+.eyebrow{
+  font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);
+  margin:0 0 20px;font-weight:500;
+}
+h1{
+  font-family:var(--serif);font-weight:400;
+  font-size:clamp(46px,8vw,86px);line-height:.98;letter-spacing:-.015em;
+  margin:0 0 22px;
+}
+.tagline{
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(19px,2.4vw,25px);line-height:1.4;color:var(--ink-dim);
+  max-width:30ch;margin:0 0 30px;
+}
+.meta{font-size:14px;color:var(--ink-dim);margin:0 0 30px;line-height:1.9}
+.meta a{border-bottom:1px solid var(--rule);transition:color .2s,border-color .2s}
+.meta a:hover{color:var(--accent);border-color:var(--accent)}
+.meta .sep{color:var(--ink-faint);padding:0 8px}
+.portrait{
+  width:210px;height:210px;border-radius:50%;object-fit:cover;
+  filter:grayscale(100%) contrast(1.04);
+  border:1px solid var(--rule);
+}
+@media(max-width:760px){
+  .hero{padding:54px 0 44px}
+  .hero-grid{grid-template-columns:1fr;gap:34px}
+  .portrait{width:132px;height:132px;order:-1}
+}
+
+/* ---------- sections ---------- */
+section{padding:62px 0;border-bottom:1px solid var(--rule-soft)}
+section:last-of-type{border-bottom:0}
+.sec-head{
+  font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 34px;font-weight:500;
+}
+.lead{
+  font-family:var(--serif);font-size:clamp(20px,2.5vw,26px);line-height:1.52;
+  color:var(--ink);max-width:60ch;margin:0;
+}
+.lead .hl{color:var(--accent)}
+
+/* ---------- roles ---------- */
+.role{
+  display:grid;grid-template-columns:150px 1fr;gap:34px;
+  padding:32px 0;border-top:1px solid var(--rule-soft);
+}
+.role:first-of-type{border-top:0;padding-top:0}
+.role-when{
+  font-size:12.5px;letter-spacing:.07em;color:var(--ink-faint);
+  padding-top:6px;line-height:1.6;
+}
+.role h3{
+  font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.22;
+  margin:0 0 5px;letter-spacing:.005em;
+}
+.role .org{font-size:14px;color:var(--accent);margin:0 0 16px;letter-spacing:.015em}
+.role .lede{
+  font-family:var(--serif);font-style:italic;font-size:16.5px;
+  color:var(--ink-dim);margin:0 0 16px;line-height:1.5;
+}
+.role ul{list-style:none;margin:0;padding:0}
+.role li{
+  position:relative;padding-left:19px;margin-bottom:11px;
+  font-size:15px;line-height:1.66;color:var(--ink-dim);
+}
+.role li::before{
+  content:"";position:absolute;left:0;top:.68em;
+  width:5px;height:1px;background:var(--ink-faint);
+}
+.role li b{color:var(--ink);font-weight:500}
+.role li a,.media a.inline,.lead a{
+  color:var(--accent);border-bottom:1px solid rgba(185,207,128,.32);
+  transition:border-color .2s;
+}
+.role li a:hover,.media a.inline:hover{border-color:var(--accent)}
+.sub{
+  margin:22px 0 4px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-faint);font-weight:500;
+}
+@media(max-width:760px){
+  .role{grid-template-columns:1fr;gap:12px;padding:26px 0}
+  .role-when{padding-top:0;order:-1;color:var(--ink-faint)}
+}
+
+/* ---------- compact list ---------- */
+.compact{display:grid;gap:14px}
+.compact div{
+  display:grid;grid-template-columns:150px 1fr;gap:34px;
+  font-size:15px;color:var(--ink-dim);
+}
+.compact .w{font-size:12.5px;color:var(--ink-faint);letter-spacing:.07em}
+.compact b{color:var(--ink);font-weight:500}
+@media(max-width:760px){.compact div{grid-template-columns:1fr;gap:3px}}
+
+/* ---------- education ---------- */
+.edu{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}
+.edu article h4{
+  font-family:var(--serif);font-weight:400;font-size:20px;margin:0 0 5px;line-height:1.25;
+}
+.edu .where{font-size:13.5px;color:var(--accent);margin:0 0 9px}
+.edu p.d{font-size:14.5px;color:var(--ink-dim);margin:0;line-height:1.6}
+
+/* ---------- tags ---------- */
+.tagset{margin-bottom:30px}
+.tagset h4{
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);margin:0 0 13px;font-weight:600;
+}
+.tags{display:flex;flex-wrap:wrap;gap:7px}
+.tags span{
+  font-size:12.5px;color:var(--ink-dim);
+  border:1px solid var(--rule);border-radius:999px;padding:5px 13px;
+  transition:border-color .2s,color .2s;
+}
+.tags span:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ---------- media cards ---------- */
+.media{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:2px}
+.media article{
+  background:var(--bg-soft);padding:26px;
+  border:1px solid var(--rule-soft);
+  transition:border-color .25s ease,background .25s ease;
+}
+.media article:hover{border-color:var(--rule);background:#17171b}
+.media h4{
+  font-family:var(--serif);font-weight:400;font-size:21px;margin:0 0 4px;line-height:1.24;
+}
+.media .kind{
+  font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--ink-faint);margin:0 0 12px;
+}
+.media p{font-size:14.5px;color:var(--ink-dim);margin:0 0 15px;line-height:1.6}
+.media .links{display:flex;flex-wrap:wrap;gap:14px;font-size:13px}
+.media .links a{
+  color:var(--accent);border-bottom:1px solid rgba(185,207,128,.3);
+  transition:border-color .2s;
+}
+.media .links a:hover{border-color:var(--accent)}
+
+/* ---------- prose blocks ---------- */
+.prose{font-size:15px;color:var(--ink-dim);line-height:1.75;max-width:76ch}
+.prose strong{color:var(--ink);font-weight:500}
+
+/* ---------- closing ---------- */
+.close{padding:74px 0 90px;text-align:center}
+.close p{
+  font-family:var(--serif);font-style:italic;font-size:22px;
+  color:var(--ink-dim);max-width:34ch;margin:0 auto 28px;line-height:1.45;
+}
+footer{
+  border-top:1px solid var(--rule-soft);padding:26px 0 40px;
+  font-size:12.5px;color:var(--ink-faint);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+footer a:hover{color:var(--accent)}
+
+/* ---------- print ---------- */
+@media print{
+  .bar,.btn,.close .btn{display:none}
+  body{background:#fff;color:#111}
+  .role li,.prose,.media p,.compact div{color:#333}
+  section{border-color:#ddd;padding:22px 0}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="wrap bar-in">
+    <span class="bar-name">Chris Davis</span>
+    <nav>
+      <a href="#experience">Experience</a>
+      <a href="#education">Education</a>
+      <a href="#skills">Skills</a>
+      <a href="#media">Media</a>
+    </nav>
+    <a class="btn btn-sm" href="chris-davis-cv.pdf" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      PDF
+    </a>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Panama City, Panama</p>
+      <h1>Chris Davis</h1>
+      <p class="tagline">International educator, curriculum designer, and library media specialist.</p>
+      <p class="meta">
+        25 years · Elementary &amp; middle school · EAL · Media literacy<br>
+        Panamanian work permit — authorized to work, no sponsorship required<br>
+        English (native) · Spanish (fluent) · Available as a local hire<br>
+        <a href="mailto:teacherslens@gmail.com">teacherslens@gmail.com</a><span class="sep">·</span><a href="https://www.linkedin.com/in/chris-davis-687b1b139" target="_blank" rel="noopener">LinkedIn</a>
+      </p>
+      <a class="btn" href="chris-davis-cv.pdf" download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download CV (PDF)
+      </a>
+    </div>
+    <img class="portrait" src="portrait.jpg" alt="Chris Davis">
+  </div>
+</header>
+
+<main>
+
+<section id="profile">
+  <div class="wrap">
+    <p class="sec-head">Profile</p>
+    <p class="lead">
+      Twenty-five years across elementary and middle school, EAL, media and information literacy, and educational technology. Author of three criteria of the <span class="hl">ACS WASC Initial Visit School Report</span> submitted for a K–8 school's successful advancement to candidacy for accreditation. Has led elementary literacy program reform twice, twenty years apart, and learning-space design initiatives securing six figures in corporate partnership funding.
+    </p>
+    <p class="lead" style="margin-top:1.1em">
+      PYP-trained, M.A. in Elementary Education, certified in Elementary Education and ESL (Texas). Designs inclusive, inquiry-driven programs integrating standards-based literacy, mathematics, science, social studies, media arts, and environmental learning.
+    </p>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="wrap">
+    <p class="sec-head">Professional Experience</p>
+
+    <article class="role">
+      <div class="role-when">2023–2026<br><span style="color:var(--ink-faint)">consulting ongoing</span></div>
+      <div>
+        <h3>Teacher, Curriculum Designer &amp; Experiential Learning Coordinator</h3>
+        <p class="org">Manglares Discovery School — Panama</p>
+        <p class="lede">Built the academic program for second grade and for the middle school at a 65-student K–8 school with no curriculum budget, using entirely open-source and free-tier resources; elements were adopted by other grade levels.</p>
+        <ul>
+          <li><b>Authored three criteria of the ACS WASC Initial Visit School Report</b> — Equity and Access to Curriculum (B2), Student Engagement in Challenging and Relevant Learning Experiences (C1), and Student-Centered Instruction (C2) — supporting the school's successful advancement to candidacy for accreditation.</li>
+          <li><b>Moved every continuously enrolled middle school student to or above grade level</b> in reading and mathematics, from starting points ranging from half a grade to three grade levels below, with several students finishing well beyond grade level. Students entering mid-year are excluded from this cohort.</li>
+          <li>Designed the full curriculum, scope, and sequence for second grade and for the middle school, built entirely from open-source content, and authored the companion textbook and student materials for each.</li>
+          <li>Designed and implemented a multi-leveled reading and writing intervention program spanning K–8 reading levels, with differentiated entry points, progress monitoring, and scaffolded supports.</li>
+          <li>Established schoolwide vertical alignment of Words Their Way phonics instruction across all grade levels, creating consistent progression and shared assessment practices between teachers.</li>
+          <li>Initiated and rolled out a schoolwide Zearn Math program, including teacher onboarding and implementation support; established consistent schoolwide i-Ready administration protocols to protect test integrity and produce reliable assessment data.</li>
+          <li>Taught second grade for one year alongside curriculum and coordination responsibilities, designing interdisciplinary learning experiences integrating Common Core literacy and mathematics, NGSS science, C3 social studies inquiry, media arts, and environmental research.</li>
+          <li>Led structured reading and writing instruction through workshop models, Socratic discussion, nonfiction research, oral presentation, and a scaffolded drafting, revision, editing, and publication process.</li>
+          <li>Developed sustained student projects and public exhibitions using design-thinking cycles, including <i>This I Believe</i> essays, films, animation, photography, projection-mapped installations, laser-cut mathematical forms, and multimedia galleries.</li>
+          <li>Created place-based environmental investigations focused on mangrove ecosystems, watersheds, biodiversity, and changing landscapes on Panama's Azuero Peninsula.</li>
+          <li>Built collaborative, noncompetitive learning spaces using visual thinking, movement, dialogue, hands-on materials, creative expression, restorative practices, and differentiated supports.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2022</div>
+      <div>
+        <h3>Fourth Grade Teacher</h3>
+        <p class="org">International School of Panama — Panama City</p>
+        <ul>
+          <li>Designed differentiated fourth-grade units using Understanding by Design backward planning and inquiry-based instruction.</li>
+          <li>Integrated STEM, design, and embodied mathematics through Sphero robotics geometry labs, Turtle Art block coding, Zearn/Singapore Math, sketchnotes, and participatory theater.</li>
+          <li>Facilitated literacy instruction through Socratic circles, collaborative inquiry, and multimodal learning experiences.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2020–2021</div>
+      <div>
+        <h3>Library Media Literacy Teacher</h3>
+        <p class="org">Khartoum International Community School — Sudan</p>
+        <ul>
+          <li>Managed Primary and Junior Library collections, cataloguing, purchasing, and the integration of Infant and Primary collections.</li>
+          <li>Taught Pre-K through Year 6 media literacy, information literacy, digital citizenship, and computational literacy within the PYP framework.</li>
+          <li>Designed reprogrammable learning spaces, coordinated Book Week, facilitated professional-development webinars, and supported collaborative student interviews with artists. Reprogrammable Spaces at KICS: <a href="https://www.youtube.com/watch?v=R_gUX1bsJKI" target="_blank" rel="noopener">video one</a> · <a href="https://www.youtube.com/watch?v=OQ1K5R9c4yU" target="_blank" rel="noopener">video two</a></li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2016–2020</div>
+      <div>
+        <h3>Podcast Producer &amp; Learning-Space Researcher</h3>
+        <p class="org">Journeys in Podcasting — Bogotá, Colombia</p>
+        <ul>
+          <li>Produced 95+ episodes of a research-based series, conducting international interviews in maker spaces, hacker spaces, Reggio Emilia schools, laboratory learning sites, and innovative educational environments.</li>
+          <li>Led workshops and consulting related to learning-space design, creative learning, inquiry, and experiential curriculum development.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2008–2016</div>
+      <div>
+        <h3>Tech Innovation Project Coordinator</h3>
+        <p class="org">Colegio Nueva Granada — Bogotá, Colombia</p>
+        <ul>
+          <li>Coordinated interdisciplinary technology and innovation projects across the middle school, working directly with 18 homeroom teachers on project-based learning, design thinking, media production, and creative technology integration.</li>
+          <li>Designed the evidence and media template system for the school's SACS accreditation report at a 1,700-student K–12 institution, mapping standards to supporting artifacts and validating evidence submitted by every self-study committee.</li>
+        </ul>
+        <p class="sub">Global Learning Studio — research, proposal, and build</p>
+        <ul>
+          <li>Conducted field research on immersive and active learning environments, including a study visit to the Hunt Library at NC State to examine its projection-immersion spaces.</li>
+          <li>Presented findings to the school Director, formed and led a cross-departmental committee, and secured approval to design and build a Global Learning Studio featuring blended laser projection onto a single continuous screen.</li>
+          <li>Partnered with Sonic Design on projection and video systems integration; <b>secured over $100,000 USD in donated technology and furnishings from Steelcase and Samsung</b> after piloting a flexible-seating prototype that drew Steelcase's interest. <a href="https://sonicdesign.com.co/aula-escolar-global-learning-studio-colegio-nueva-granada/" target="_blank" rel="noopener">Project profile — Sonic Design</a></li>
+          <li>Managed recurring project cycles, critical events, and public demonstrations of student learning within the new space.</li>
+          <li>The studio remains in daily use and continues to serve as the school's flagship learning space nearly a decade later.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2005–2008</div>
+      <div>
+        <h3>Elementary Classroom Teacher</h3>
+        <p class="org">Colegio Karl C. Parrish — Barranquilla, Colombia</p>
+        <ul>
+          <li>Taught Grade 3 using Project Zero's Spectrum approach to project-based learning, developing interdisciplinary projects built around students' varied entry points and strengths.</li>
+          <li>Launched a student-and-teacher podcast broadcasting to parents and the wider Barranquilla community — student-produced audio for an authentic external audience, predating classroom podcasting as common practice.</li>
+          <li>Directed large-scale stage productions centered on literacy development, using rap, song, and performance as vehicles for oral language, fluency, and text comprehension.</li>
+          <li>Founded and led a student folkloric drumming ensemble that performed at every recess, building a daily music practice into the life of the school.</li>
+          <li>Implemented Junior Great Books reading projects culminating in student symposia and Socratic discussion; sessions were filmed, transcribed, and published for parents and the community.</li>
+          <li>Partnered with the Art teacher to create a student gallery, interviewing each student about their portfolio and printing the transcribed reflections alongside their artwork.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2004–2005</div>
+      <div>
+        <h3>Sabbatical — Documentary Motorcycle Expedition</h3>
+        <p class="org">South America</p>
+        <ul>
+          <li>Rode South America by motorcycle with a fellow international educator, prioritizing unpaved routes and rural crossings over highways.</li>
+          <li>Photo-documented the journey and produced a live travel website publishing dispatches from the road.</li>
+          <li>Organized "A Day at Work" experiences with local hosts in communities along the route, working alongside people in their trades and documenting the exchange.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="role">
+      <div class="role-when">2001–2004</div>
+      <div>
+        <h3>Elementary Classroom Teacher</h3>
+        <p class="org">Colegio Karl C. Parrish — Barranquilla, Colombia</p>
+        <ul>
+          <li>Instigated reform of the elementary literacy program, moving the school from a traditional basal-reader and daily-drill model to a balanced literacy approach with a strong phonics foundation, drawing on Patricia Cunningham's resources.</li>
+          <li>Piloted and secured adoption of the Oregon Math Center approach across the elementary years.</li>
+          <li>Developed Project Zero–based interdisciplinary projects in close collaboration with the school's Reggio Emilia atelier.</li>
+          <li>Created a bookmaking project documenting student writing alongside transcriptions of videotaped Socratic discussions; the finished books were catalogued in the school library and available for all students to check out.</li>
+          <li>Innovated music and literacy routines using call-and-response rap and song to build fluency, phrasing, and oral language.</li>
+          <li>Taught Grade 2, with arts integration and student-voice documentation embedded throughout.</li>
+        </ul>
+      </div>
+    </article>
+
+    <p class="sec-head" style="margin-top:52px">Additional Experience</p>
+    <div class="compact">
+      <div><span class="w">2000–2001</span><span><b>ESL Coordinator / Middle School ESL Teacher</b> — Academia Cotopaxi, Quito, Ecuador</span></div>
+      <div><span class="w">1999–2000</span><span><b>Elementary Classroom Teacher</b> — Cochabamba Cooperative School, Bolivia</span></div>
+      <div><span class="w">1997–1999</span><span><b>ESL Teacher</b> — Morgan Academy Arts Magnet School, Galveston, Texas</span></div>
+      <div><span class="w">1991–1993</span><span><b>Teacher Trainer / High School ESL Teacher</b> — WorldTeach at Harvard University, Łańcut and Rzeszów, Poland</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="education">
+  <div class="wrap">
+    <p class="sec-head">Education</p>
+    <div class="edu">
+      <article>
+        <h4>M.A. in Elementary Education</h4>
+        <p class="where">University of Alabama — Bogotá, Colombia</p>
+        <p class="d">Interdisciplinary learning, progressive redesign of learning environments, and the development of engaging, contextualized learning experiences.</p>
+      </article>
+      <article>
+        <h4>ESL / Elementary Teacher Certification</h4>
+        <p class="where">University of St. Thomas with Region IV — Houston, Texas</p>
+        <p class="d">Joint certification in ESL and Elementary Education; Lifetime Texas ESL certification. Multiple Intelligences approaches to language learning and differentiated instruction.</p>
+      </article>
+      <article>
+        <h4>B.A. in International Studies</h4>
+        <p class="where">Southwestern University — Georgetown, Texas</p>
+        <p class="d">Liberal arts, focused on international history and literature, with additional emphasis in photography and classical guitar.</p>
+      </article>
+      <article>
+        <h4>Graduate Coursework, Post-Soviet Studies</h4>
+        <p class="where">University of Texas — Austin, Texas</p>
+        <p class="d">Two years of graduate study in regional history, politics, and culture, following two years teaching in Poland.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <p class="sec-head">Core Professional Skills</p>
+    <div class="tagset">
+      <h4>Curriculum and Instruction</h4>
+      <div class="tags">
+        <span>Literacy Intervention</span><span>Balanced Literacy</span><span>Writers Workshop</span><span>Socratic Seminar</span><span>Project-Based Learning</span><span>Interdisciplinary Curriculum Design</span><span>Differentiated Instruction</span><span>English Language Learner Support</span><span>Inquiry-Based Learning</span><span>Accreditation Self-Study &amp; Evidence Documentation</span>
+      </div>
+    </div>
+    <div class="tagset">
+      <h4>Media, Information &amp; Technology Literacy</h4>
+      <div class="tags">
+        <span>Media Literacy</span><span>Digital Citizenship</span><span>Library Management</span><span>AI in Education</span><span>Maker Literacy Labs</span><span>Documentary Production</span><span>Podcast Production</span><span>Projection Mapping</span>
+      </div>
+    </div>
+    <div class="tagset">
+      <h4>Learning Environments &amp; School Culture</h4>
+      <div class="tags">
+        <span>Learning Space Design</span><span>Reggio Emilia–Inspired Documentation</span><span>Active Learning Spaces</span><span>Student Voice</span><span>Family Communication</span><span>Restorative Practices</span><span>Professional Development Facilitation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="media">
+  <div class="wrap">
+    <p class="sec-head">Media Projects</p>
+    <div class="media">
+      <article>
+        <p class="kind">Podcast · 95 episodes</p>
+        <h4>Journeys in Podcasting</h4>
+        <p>Creator and producer of an educator-focused series exploring inquiry-based learning, constructivism, experiential education, learning-space design, and innovative school models.</p>
+        <div class="links">
+          <a href="https://open.spotify.com/show/0mg3PyAMUUHO6HxHD4oJKJ" target="_blank" rel="noopener">Spotify</a>
+          <a href="https://soundcloud.com/chris-davis-276158228/sets/journeys-in-podcasting-1" target="_blank" rel="noopener">Soundcloud</a>
+        </div>
+      </article>
+      <article>
+        <p class="kind">Published writing · 2014</p>
+        <h4>Reflection, Conversation, and Socratic Spaces</h4>
+        <p>On slowing student dialogue down to deepen reflection — Socratic book clubs, poetry, and multimodal student response. Published by Edutopia, the George Lucas Educational Foundation.</p>
+        <div class="links">
+          <a href="https://www.edutopia.org/blog/reflection-conversation-and-socratic-spaces-chris-davis" target="_blank" rel="noopener">Read on Edutopia</a>
+        </div>
+      </article>
+      <article>
+        <p class="kind">Blog</p>
+        <h4>Teacher's Lens</h4>
+        <p>Reflections on the relationship among experience, research, belief, agency, and the development of "live hypotheses" in education.</p>
+        <div class="links">
+          <a href="https://teacherslens.substack.com/" target="_blank" rel="noopener">Substack</a>
+          <a href="https://chrisdavislens.blogspot.com/" target="_blank" rel="noopener">Blogspot</a>
+        </div>
+      </article>
+      <article>
+        <p class="kind">Family communication</p>
+        <h4>Class Blogs</h4>
+        <p>Documenting daily learning, student work, and inquiry projects for parent communities.</p>
+        <div class="links">
+          <a href="https://docs.google.com/document/d/14YcbPCxh6eB8keBbA3VW47p7tops7o-_9_J06pXIsRM/preview" target="_blank" rel="noopener">Our Class in Motion</a>
+          <a href="https://docs.google.com/document/d/1tWjMgLTv76np9sY3vGTjYFpi4SaKT2ih7Mv1-awDqjk/preview" target="_blank" rel="noopener">Fourth Grade Blog</a>
+        </div>
+      </article>
+      <article>
+        <p class="kind">School community media</p>
+        <h4>Crowdsourced School Video</h4>
+        <p>Co-created a platform to strengthen community, student voice, and family connection during the COVID-19 pandemic.</p>
+        <div class="links">
+          <a href="https://www.youtube.com/watch?v=Lx6wAz142_8&amp;list=PLhS5AlLyNAs0oLmhn1EsLnseJM-bDPRok" target="_blank" rel="noopener">Sample from Manglares</a>
+        </div>
+      </article>
+      <article>
+        <p class="kind">Learning space · 2016</p>
+        <h4>Global Learning Studio</h4>
+        <p>Blended laser projection onto a single continuous screen at Colegio Nueva Granada — still the school's flagship learning space nearly a decade on.</p>
+        <div class="links">
+          <a href="https://sonicdesign.com.co/aula-escolar-global-learning-studio-colegio-nueva-granada/" target="_blank" rel="noopener">Project profile</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="toolkit">
+  <div class="wrap">
+    <p class="sec-head">Technology &amp; Training</p>
+    <div class="prose">
+      <p><strong>Technology and media toolkit</strong> — ChatGPT · Gemini · Claude · Oliver Softlink LMS · Google Workspace for Education · Adobe Creative Suite (Photoshop, Premiere Pro, Lightroom, Audition) · GarageBand · Logic Pro X · Projection Mapping · iPad Media Production · Explain Everything · DSLR Photography · Video Documentary · Audio Recording · Screencasting · Drone Filming</p>
+      <p><strong>Selected professional training</strong> — Making the PYP Happen · Constructing Modern Knowledge · NYU ITP Camp · Reggio Emilia: Children and Nature · NOTOSH / LUMA Institute: Design Thinking for Educators · How to Research and Write Using Generative AI Tools · MIT Scratch Game Design</p>
+      <p><strong>Professional development facilitated</strong> — design thinking, active learning spaces, remote teaching, participatory theater and transmedia storytelling, and student media production.</p>
+      <p><strong>Extracurricular contributions</strong> — Classical guitar and hand percussion (music ECAs) · Photography and yearbook · Video and documentary production · Podcasting and student media · Running and swimming</p>
+    </div>
+  </div>
+</section>
+
+<div class="close wrap">
+  <p>Available as a local hire in Panama.</p>
+  <a class="btn" href="chris-davis-cv.pdf" download>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Download CV (PDF)
+  </a>
+</div>
+
+</main>
+
+<footer class="wrap">
+  <span>Chris Davis · Panama City</span>
+  <span><a href="mailto:teacherslens@gmail.com">teacherslens@gmail.com</a></span>
+</footer>
+
+</body>
+</html>
