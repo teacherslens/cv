@@ -619,4 +619,35 @@
 
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let W = 0, H = 0, last = performance.now(), lastY = scrollY, energy = 0, build = 0, level = 0, levelV = 0, clock = 0;
-    function place() { band.style.top = (header ? Math.max(0,
+    function place() { band.style.top = (header ? Math.max(0, header.getBoundingClientRect().bottom) : 0) + 'px'; }
+
+    function frame(t) {
+      const dt = Math.min(50, t - last); last = t;
+      clock += dt;
+      if (!hidden || full) {
+        if (!full) place();
+        if (band.clientWidth !== W || band.clientHeight !== H) { W = band.clientWidth; H = band.clientHeight; viz.resize(W, H, Math.min(devicePixelRatio || 1, full ? 2 : 3), full); }
+        const vel = Math.abs(scrollY - lastY) / Math.max(dt, 1) * 1000; lastY = scrollY;
+        const target = Math.min(1, vel / S.SCROLL_SENSITIVITY);
+        energy += (target - energy) * (1 - Math.exp(-dt / (target > energy ? 60 : 250)));
+        build = Math.min(1, Math.max(0, build + (energy > .05 ? dt / S.SCROLL_BUILDUP : -dt / S.SCROLL_SETTLE)));
+        const raw = energy * (.35 + .65 * build);
+        const steps = Math.ceil(dt / 4), h = dt / steps;
+        for (let i = 0; i < steps; i++) {
+          const w = 6.6 / (raw > level ? S.SCROLL_RESPONSE * 2 : S.SCROLL_SETTLE);
+          levelV += (w * w * (raw - level) - 2 * w * levelV) * h;
+          level = Math.max(0, Math.min(1.2, level + levelV * h));
+        }
+        // Full screen has no scrolling, so it breathes gently between calm and lively instead
+        const lv = full ? 0.22 + 0.18 * Math.sin(clock / 24000 * Math.PI * 2) : level;
+        viz.step(dt, lv, reduce);
+      }
+      if (!reduce) requestAnimationFrame(frame);
+    }
+    addEventListener('scroll', place, { passive: true });
+    requestAnimationFrame(frame);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
