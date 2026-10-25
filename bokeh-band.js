@@ -501,8 +501,8 @@
     if (forced && BANDS[forced]) return forced;
     let prev = null;
     try { prev = localStorage.getItem('tl-band'); } catch (e) {}
-    const pool = names.filter(n => n !== prev);
-    const pick = pool[Math.floor(Math.random() * pool.length)] || names[0];
+        const i = names.indexOf(prev);
+    const pick = i < 0 ? names[Math.floor(Math.random() * names.length)] : names[(i + 1) % names.length];
     try { localStorage.setItem('tl-band', pick); } catch (e) {}
     return pick;
   }
