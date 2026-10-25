@@ -501,8 +501,16 @@
     if (forced && BANDS[forced]) return forced;
     let prev = null;
     try { prev = localStorage.getItem('tl-band'); } catch (e) {}
-        const i = names.indexOf(prev);
-    const pick = i < 0 ? names[Math.floor(Math.random() * names.length)] : names[(i + 1) % names.length];
+        // Shuffle-bag: a random order of all bands, each shown once before reshuffling
+    let bag = [];
+    try { bag = JSON.parse(localStorage.getItem('tl-band-bag') || '[]').filter(n => BANDS[n]); } catch (e) {}
+    if (!bag.length) {
+      bag = names.slice();
+      for (let j = bag.length - 1; j > 0; j--) { const r = Math.floor(Math.random() * (j + 1)); [bag[j], bag[r]] = [bag[r], bag[j]]; }
+      if (bag.length > 1 && bag[0] === prev) bag.push(bag.shift());
+    }
+    const pick = bag.shift();
+    try { localStorage.setItem('tl-band-bag', JSON.stringify(bag)); } catch (e) {}
     try { localStorage.setItem('tl-band', pick); } catch (e) {}
     return pick;
   }
