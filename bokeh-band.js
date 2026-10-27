@@ -1,7 +1,7 @@
 /* Visual band for teacherslens.com
    An animated strip under the fixed menu. Each page load shows a different visualization.
    Load with: <script src="bokeh-band.js" defer></script>
-   Preview a specific one: teacherslens.com/?band=bokeh, ?band=hexagons or ?band=lights
+   Preview a specific one: teacherslens.com/?band=bokeh, ?band=hexagons, ?band=lights or ?band=diatoms
    Optional: add data-bokeh-anchor to the menu element to pin the band under it. */
 (() => {
   const S = {
@@ -493,15 +493,859 @@
     };
   }
 
+  /* ================= Diatoms (from Diatomarium, prototype 4) ================= */
+  function diatomBand(stage) {
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    const TAU = Math.PI * 2;
+    // ---------- Color: dark-field blues, teals and the odd violet ----------
+    function hueFor() {
+      const r = Math.random();
+      if (r < 0.31) return rand(188, 205);
+      if (r < 0.50) return rand(170, 188);
+      if (r < 0.65) return rand(205, 222);
+      if (r < 0.75) return rand(150, 170);
+      if (r < 0.83) return rand(228, 245);
+      if (r < 0.92) return rand(32, 48);       // amber, like interference tints
+      return rand(316, 338);                   // rose
+    }
+    const hsla = (h, s, l, a) => `hsla(${h.toFixed(0)},${s}%,${l}%,${a})`;
+  
+    // ---------- Pattern helpers ----------
+    function hexGrid(B, sp, rot) {
+      const pts = [], rowH = sp * 0.866;
+      const c = Math.cos(rot), s = Math.sin(rot);
+      for (let j = -Math.ceil(B / rowH) - 1; j <= Math.ceil(B / rowH) + 1; j++) {
+        const off = (j & 1) ? sp / 2 : 0;
+        for (let i = -Math.ceil(B / sp) - 1; i <= Math.ceil(B / sp) + 1; i++) {
+          const x = i * sp + off, y = j * rowH;
+          pts.push([x * c - y * s, x * s + y * c]);
+        }
+      }
+      return pts;
+    }
+    function dot(g, x, y, r) { g.moveTo(x + r, y); g.arc(x, y, r, 0, TAU); }
+  
+    function rim(g, path, h, width, glow) {
+      g.save();
+      g.shadowColor = hsla(h, 85, 70, 0.9);
+      g.shadowBlur = glow;
+      g.strokeStyle = hsla(h, 70, 82, 0.95);
+      g.lineWidth = width;
+      g.stroke(path);
+      g.shadowBlur = 0;
+      g.strokeStyle = hsla(h, 90, 92, 0.6);
+      g.lineWidth = width * 0.35;
+      g.stroke(path);
+      g.restore();
+    }
+    function body(g, path, h, R, darkCenter) {
+      const gr = g.createRadialGradient(0, 0, 0, 0, 0, R);
+      gr.addColorStop(0, hsla(h, 55, darkCenter ? 3 : 10, 0.96));
+      gr.addColorStop(1, hsla(h, 60, 16, 0.96));
+      g.fillStyle = gr;
+      g.fill(path);
+    }
+    // Areolae: dots clipped to the shape, sized and lit by a radial profile
+    function areolae(g, path, R, h, sp, profile, skip) {
+      g.save();
+      g.clip(path);
+      g.globalCompositeOperation = 'lighter';
+      const pts = hexGrid(R * 1.05, sp, rand(0, TAU));
+      const bands = 6;
+      const paths = Array.from({ length: bands }, () => new Path2D());
+      for (const [x, y] of pts) {
+        const rho = Math.hypot(x, y) / R;
+        if (rho > 1.02 || (skip && skip(x, y, rho))) continue;
+        const v = profile(rho);                         // 0..1 size/brightness
+        const b = Math.min(bands - 1, Math.floor(v * bands));
+        dot(paths[b], x, y, sp * (0.16 + 0.24 * v));
+      }
+      paths.forEach((p, b) => {
+        const v = (b + 0.5) / bands;
+        g.fillStyle = hsla(h, 65, 45 + 30 * v, 0.35 + 0.5 * v);
+        g.fill(p);
+      });
+      g.restore();
+    }
+  
+    // ---------- Diatom forms ----------
+    // Each returns { draw(g), extent } with the shape centered at 0,0 within radius R.
+    const FORMS = {
+      centric(R, h) {
+        const p = new Path2D(); p.arc(0, 0, R * 0.97, 0, TAU);
+        const darkCenter = Math.random() < 0.3;
+        const hyal = Math.random() < 0.5 ? R * rand(0.05, 0.16) : 0;
+        const sp = Math.max(3.6, Math.min(9, R * rand(0.035, 0.065)));
+        const prof = pick([
+          r => 0.35 + 0.65 * r,
+          r => 1 - 0.6 * r,
+          r => 0.55 + 0.45 * Math.sin(r * Math.PI),
+          r => darkCenter ? Math.max(0, (r - 0.45) / 0.55) : 0.7,
+        ]);
+        return { genus: 'Coscinodiscus', draw(g) {
+          body(g, p, h, R, darkCenter);
+          areolae(g, p, R, h, sp, prof, (x, y, r) => r * R < hyal || (darkCenter && r < 0.42));
+          if (hyal) {
+            g.save(); g.globalCompositeOperation = 'lighter';
+            const n = Math.floor(rand(5, 9)), q = new Path2D();
+            for (let i = 0; i < n; i++) { const a = i / n * TAU; dot(q, Math.cos(a) * hyal, Math.sin(a) * hyal, sp * 0.45); }
+            g.fillStyle = hsla(h, 70, 75, 0.85); g.fill(q); g.restore();
+          }
+          // marginal ring of fine dots
+          g.save(); g.globalCompositeOperation = 'lighter';
+          const m = new Path2D(), n = Math.floor(TAU * R * 0.92 / (sp * 0.6));
+          for (let i = 0; i < n; i++) { const a = i / n * TAU; dot(m, Math.cos(a) * R * 0.92, Math.sin(a) * R * 0.92, sp * 0.14); }
+          g.fillStyle = hsla(h, 70, 80, 0.7); g.fill(m); g.restore();
+          rim(g, p, h, 2.2, 10);
+          const inner = new Path2D(); inner.arc(0, 0, R * 0.88, 0, TAU);
+          g.strokeStyle = hsla(h, 60, 70, 0.25); g.lineWidth = 1; g.stroke(inner);
+        } };
+      },
+  
+      radial(R, h) {
+        const p = new Path2D(); p.arc(0, 0, R * 0.97, 0, TAU);
+        const n = 2 * Math.floor(rand(3, 8));
+        const c = R * rand(0.1, 0.22);
+        const sp = Math.max(3.6, Math.min(8, R * rand(0.035, 0.055)));
+        const twist = Math.random() < 0.4 ? rand(-0.5, 0.5) : 0;
+        return { genus: pick(['Actinoptychus', 'Arachnoidiscus']), draw(g) {
+          body(g, p, h, R, false);
+          g.save(); g.clip(p);
+          for (let i = 0; i < n; i++) {
+            const a0 = i / n * TAU, a1 = (i + 1) / n * TAU;
+            if (i & 1) {
+              const w = new Path2D(); w.moveTo(0, 0); w.arc(0, 0, R, a0, a1); w.closePath();
+              g.fillStyle = hsla(h, 60, 30, 0.35); g.fill(w);
+            }
+          }
+          g.globalCompositeOperation = 'lighter';
+          const dots = new Path2D(), dotsB = new Path2D();
+          for (let rho = c + sp; rho < R * 0.93; rho += sp * 0.9) {
+            const k = Math.max(1, Math.floor(TAU * rho / (sp * 1.05)));
+            for (let i = 0; i < k; i++) {
+              const a = i / k * TAU + twist * (rho / R);
+              const sector = Math.floor(((a % TAU) + TAU) % TAU / TAU * n);
+              dot((sector & 1) ? dots : dotsB, Math.cos(a) * rho, Math.sin(a) * rho, sp * (0.18 + 0.16 * rho / R));
+            }
+          }
+          g.fillStyle = hsla(h, 65, 70, 0.75); g.fill(dots);
+          g.fillStyle = hsla(h, 60, 55, 0.5); g.fill(dotsB);
+          // spokes
+          g.strokeStyle = hsla(h, 80, 82, 0.8); g.lineWidth = 1.3;
+          g.shadowColor = hsla(h, 85, 70, 0.8); g.shadowBlur = 5;
+          g.beginPath();
+          for (let i = 0; i < n; i++) {
+            const a = i / n * TAU;
+            g.moveTo(Math.cos(a) * c, Math.sin(a) * c);
+            g.quadraticCurveTo(Math.cos(a + twist * 0.5) * R * 0.5, Math.sin(a + twist * 0.5) * R * 0.5,
+                               Math.cos(a + twist) * R * 0.95, Math.sin(a + twist) * R * 0.95);
+          }
+          g.stroke();
+          g.restore();
+          const hc = new Path2D(); hc.arc(0, 0, c, 0, TAU);
+          g.fillStyle = hsla(h, 50, 6, 0.9); g.fill(hc);
+          rim(g, hc, h, 1.4, 6);
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+  
+      polygon(R, h) {
+        const n = Math.random() < 0.72 ? 3 : (Math.random() < 0.7 ? 4 : 5);
+        const bulge = (Math.random() < 0.3 ? rand(-0.32, -0.14) : rand(-0.1, 0.2)) * R;
+        const rot0 = rand(0, TAU);
+        const V = [];
+        for (let i = 0; i < n; i++) { const a = rot0 + i / n * TAU; V.push([Math.cos(a) * R * 0.97, Math.sin(a) * R * 0.97]); }
+        const round = rand(0.08, 0.18);
+        const p = new Path2D();
+        const lerpP = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+        for (let i = 0; i < n; i++) {
+          const A = V[i], B = V[(i + 1) % n], C = V[(i + 2) % n];
+          const s = lerpP(A, B, round), e = lerpP(A, B, 1 - round);
+          const m = lerpP(A, B, 0.5), mm = Math.hypot(m[0], m[1]);
+          const ctrl = [m[0] + m[0] / mm * bulge * 2, m[1] + m[1] / mm * bulge * 2];
+          if (i === 0) p.moveTo(s[0], s[1]);
+          p.quadraticCurveTo(ctrl[0], ctrl[1], e[0], e[1]);
+          const s2 = lerpP(B, C, round);
+          p.quadraticCurveTo(B[0], B[1], s2[0], s2[1]);
+        }
+        p.closePath();
+        const sp = Math.max(3.6, Math.min(9, R * rand(0.04, 0.07)));
+        const prof = pick([r => 1 - 0.55 * r, r => 0.4 + 0.6 * r, r => 0.75]);
+        return { genus: n === 3 ? 'Triceratium' : (n === 4 ? 'Amphitetras' : 'Pentapodiscus'), draw(g) {
+          body(g, p, h, R, false);
+          areolae(g, p, R, h, sp, prof);
+          // corner ocelli: little domed eyes at each corner
+          g.save(); g.globalCompositeOperation = 'lighter';
+          for (const v of V) {
+            const cx = v[0] * 0.8, cy = v[1] * 0.8, rr = R * 0.07;
+            const o = new Path2D(); o.arc(cx, cy, rr, 0, TAU);
+            g.fillStyle = hsla(h, 60, 25, 0.8); g.fill(o);
+            const q = new Path2D();
+            for (const [x, y] of hexGrid(rr, rr * 0.35, 0)) if (Math.hypot(x, y) < rr * 0.85) dot(q, cx + x, cy + y, rr * 0.08);
+            g.fillStyle = hsla(h, 70, 80, 0.8); g.fill(q);
+            rim(g, o, h, 1, 4);
+          }
+          g.restore();
+          rim(g, p, h, 2.4, 12);
+          g.save(); g.scale(0.93, 0.93);
+          g.strokeStyle = hsla(h, 60, 70, 0.22); g.lineWidth = 1.2; g.stroke(p);
+          g.restore();
+        } };
+      },
+  
+      star(R, h) {
+        const p = new Path2D(); p.arc(0, 0, R * 0.97, 0, TAU);
+        const n = Math.floor(rand(5, 13));
+        const c = R * rand(0.28, 0.42);
+        const sp = Math.max(3.6, Math.min(8, R * rand(0.04, 0.06)));
+        return { genus: 'Asterolampra', draw(g) {
+          body(g, p, h, R, true);
+          areolae(g, p, R, h, sp, r => Math.max(0, (r - 0.4) / 0.6), (x, y, r) => r * R < c * 1.05);
+          const hc = new Path2D(); hc.arc(0, 0, c, 0, TAU);
+          g.fillStyle = hsla(h, 50, 3, 0.95); g.fill(hc);
+          g.save();
+          g.globalCompositeOperation = 'lighter';
+          g.shadowColor = hsla(h, 90, 70, 0.9); g.shadowBlur = 8;
+          for (let i = 0; i < n; i++) {
+            const a = i / n * TAU, w = TAU / n * 0.16;
+            const ray = new Path2D();
+            ray.moveTo(Math.cos(a - w) * c * 0.25, Math.sin(a - w) * c * 0.25);
+            ray.lineTo(Math.cos(a) * R * 0.86, Math.sin(a) * R * 0.86);
+            ray.lineTo(Math.cos(a + w) * c * 0.25, Math.sin(a + w) * c * 0.25);
+            ray.closePath();
+            g.fillStyle = hsla(h, 70, 72, 0.55); g.fill(ray);
+          }
+          g.restore();
+          rim(g, hc, h, 1.2, 6);
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+  
+      pennate(R, h) {
+        const w = R / rand(2.6, 4.4), q = rand(1.4, 2.4);
+        const pts = [];
+        for (let i = 0; i <= 80; i++) {
+          const t = i / 80 * TAU;
+          const cx = Math.cos(t), sy = Math.sin(t);
+          pts.push([Math.sign(cx) * Math.pow(Math.abs(cx), 2 / q) * R * 0.97, Math.sign(sy) * Math.pow(Math.abs(sy), 2 / q) * w]);
+        }
+        const p = new Path2D(); p.moveTo(...pts[0]); for (const pt of pts) p.lineTo(...pt); p.closePath();
+        const sp = Math.max(3.4, Math.min(7, w * rand(0.13, 0.2)));
+        return { genus: pick(['Navicula', 'Pinnularia', 'Surirella']), draw(g) {
+          body(g, p, h, R, false);
+          g.save(); g.clip(p); g.globalCompositeOperation = 'lighter';
+          const d = new Path2D();
+          for (let x = -R; x <= R; x += sp) {
+            const ang = (x / R) * 0.35;                      // striae fan out from the middle
+            if (Math.abs(x) < sp * 1.2) continue;
+            for (const side of [-1, 1]) {
+              for (let s = sp * 0.9; s < w * 1.1; s += sp * 0.6) {
+                dot(d, x + Math.sin(ang) * s * side, side * s * Math.cos(ang), sp * 0.17);
+              }
+            }
+          }
+          g.fillStyle = hsla(h, 65, 70, 0.75); g.fill(d);
+          g.restore();
+          // raphe with a central nodule
+          g.save();
+          g.shadowColor = hsla(h, 90, 70, 0.8); g.shadowBlur = 5;
+          g.strokeStyle = hsla(h, 80, 85, 0.9); g.lineWidth = 1.4;
+          g.beginPath(); g.moveTo(-R * 0.86, 0); g.lineTo(-sp * 1.4, 0); g.moveTo(sp * 1.4, 0); g.lineTo(R * 0.86, 0); g.stroke();
+          g.beginPath(); g.ellipse(0, 0, sp * 1.1, sp * 0.8, 0, 0, TAU);
+          g.fillStyle = hsla(h, 70, 75, 0.8); g.fill();
+          g.restore();
+          rim(g, p, h, 2, 9);
+        } };
+      },
+  
+      chain(R, h) {
+        const k = Math.floor(rand(3, 6));
+        const cw = (2 * R * 0.94) / k, ch = Math.min(R * 0.55, cw * rand(0.8, 1.25)) / 2;
+        const cells = [];
+        for (let i = 0; i < k; i++) cells.push(-R * 0.94 + cw * (i + 0.5));
+        const sp = Math.max(3.4, Math.min(7, ch * rand(0.16, 0.24)));
+        return { genus: pick(['Biddulphia', 'Isthmia', 'Terpsinoe']), draw(g) {
+          for (const cx of cells) {
+            const p = new Path2D();
+            p.ellipse(cx, 0, cw * 0.5, ch, 0, 0, TAU);
+            body(g, p, h, R, false);
+            g.save(); g.clip(p); g.globalCompositeOperation = 'lighter';
+            const d = new Path2D();
+            for (const [x, y] of hexGrid(Math.max(cw, ch), sp, 0.3)) {
+              const rx = x / (cw * 0.5), ry = y / ch;
+              if (rx * rx + ry * ry > 1) continue;
+              dot(d, cx + x, y, sp * (0.15 + 0.15 * (1 - Math.hypot(rx, ry))));
+            }
+            g.fillStyle = hsla(h, 65, 68, 0.7); g.fill(d);
+            g.restore();
+            // horns at each end of the cell
+            g.save(); g.globalCompositeOperation = 'lighter';
+            for (const s of [-1, 1]) {
+              const hn = new Path2D(); hn.arc(cx + s * cw * 0.42, -ch * 0.75, ch * 0.16, 0, TAU);
+              g.fillStyle = hsla(h, 70, 75, 0.7); g.fill(hn);
+            }
+            const cdot = new Path2D(); cdot.arc(cx, 0, ch * 0.18, 0, TAU);
+            g.fillStyle = hsla(h, 60, 80, 0.6); g.fill(cdot);
+            g.restore();
+            rim(g, p, h, 1.8, 8);
+          }
+        } };
+      },
+    };
+    // ======================================================================
+    // Expanded library (prototype 4): stars, three-armed forms, lemons,
+    // waisted and knotted pennates, rods, crescents, S-curves, ribbed ovals,
+    // rosette discs, rings, girdle views and living filament chains.
+    // ======================================================================
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    function envelope(x, R, q) {
+      const u = Math.min(1, Math.abs(x) / (R * 0.97));
+      return Math.pow(Math.max(0, 1 - Math.pow(u, q)), 1 / q);
+    }
+    function roundRectPath(p, x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      p.moveTo(x + r, y); p.lineTo(x + w - r, y); p.quadraticCurveTo(x + w, y, x + w, y + r);
+      p.lineTo(x + w, y + h - r); p.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      p.lineTo(x + r, y + h); p.quadraticCurveTo(x, y + h, x, y + h - r);
+      p.lineTo(x, y + r); p.quadraticCurveTo(x, y, x + r, y); p.closePath();
+    }
+    function polarPath(fn, n = 360) {
+      const p = new Path2D();
+      for (let i = 0; i <= n; i++) {
+        const a = i / n * TAU, r = fn(a);
+        if (i === 0) p.moveTo(Math.cos(a) * r, Math.sin(a) * r); else p.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      p.closePath();
+      return p;
+    }
+  
+    // Shared builder for boat-, rod-, lemon- and S-shaped valves
+    function pennateLike(R, h, o) {
+      const N = 160, top = [], bot = [];
+      const X0 = -R * 0.97, X1 = R * 0.97;
+      const bend = o.bend || (() => 0);
+      let Wmax = 0;
+      for (let i = 0; i <= N; i++) {
+        const x = X0 + (X1 - X0) * i / N;
+        const ww = Math.max(0.6, o.w(x)), c = bend(x);
+        Wmax = Math.max(Wmax, ww);
+        top.push([x, c - ww]); bot.push([x, c + ww]);
+      }
+      const p = new Path2D();
+      p.moveTo(top[0][0], top[0][1]);
+      for (const q of top) p.lineTo(q[0], q[1]);
+      for (let i = bot.length - 1; i >= 0; i--) p.lineTo(bot[i][0], bot[i][1]);
+      p.closePath();
+      const sp = clamp(Wmax * rand(0.13, 0.2), 2.8, 7);
+      const fan = o.fan ?? rand(0.2, 0.5);
+      return { genus: o.genus, draw(g) {
+        body(g, p, h, R, false);
+        g.save(); g.clip(p); g.globalCompositeOperation = 'lighter';
+        const d = new Path2D();
+        for (let x = X0; x <= X1; x += sp) {
+          const c = bend(x), ww = o.w(x), ang = fan * (x / R);
+          if (o.raphe && Math.abs(x) < sp * 1.2) continue;
+          for (const side of [-1, 1]) {
+            for (let s = sp * 0.9; s < ww * 1.15; s += sp * 0.6) {
+              dot(d, x + Math.sin(ang) * s * side, c + side * s * Math.cos(ang), sp * 0.17);
+            }
+          }
+        }
+        g.fillStyle = hsla(h, 65, 70, o.style === 'ribs' ? 0.35 : 0.75); g.fill(d);
+        if (o.style === 'ribs') {
+          g.shadowColor = hsla(h, 85, 70, 0.8); g.shadowBlur = 4;
+          g.strokeStyle = hsla(h, 75, 80, 0.75); g.lineWidth = 1.7;
+          g.beginPath();
+          for (let x = X0 + sp * 2; x < X1 - sp; x += sp * 2.6) {
+            const c = bend(x), ww = o.w(x), tilt = fan * (x / R) * ww;
+            g.moveTo(x + tilt, c - ww * 1.05);
+            g.quadraticCurveTo(x, c, x + tilt, c + ww * 1.05);
+          }
+          g.stroke();
+        }
+        g.restore();
+        if (o.stauros) {
+          g.save(); g.clip(p);
+          g.fillStyle = hsla(h, 50, 5, 0.7);
+          g.fillRect(-sp * 1.4, -R, sp * 2.8, 2 * R);
+          g.restore();
+        }
+        if (o.raphe || o.midline) {
+          g.save();
+          g.shadowColor = hsla(h, 90, 70, 0.8); g.shadowBlur = 5;
+          g.strokeStyle = hsla(h, 80, 85, o.raphe ? 0.9 : 0.5); g.lineWidth = o.raphe ? 1.4 : 1;
+          g.beginPath();
+          let started = false;
+          for (let x = X0 * 0.9; x <= X1 * 0.9; x += 2) {
+            if (o.raphe && Math.abs(x) < sp * 1.4) { started = false; continue; }
+            if (!started) { g.moveTo(x, bend(x)); started = true; } else g.lineTo(x, bend(x));
+          }
+          g.stroke();
+          if (o.raphe) {
+            g.beginPath(); g.ellipse(0, bend(0), sp * 1.1, sp * 0.8, 0, 0, TAU);
+            g.fillStyle = hsla(h, 70, 75, 0.8); g.fill();
+          }
+          g.restore();
+        }
+        rim(g, p, h, 2, 9);
+      } };
+    }
+  
+    Object.assign(FORMS, {
+      lemon(R, h) {
+        const W = R / rand(1.8, 3), q = rand(1.15, 1.6), rostrate = Math.random() < 0.5;
+        return pennateLike(R, h, {
+          genus: pick(['Navicula', 'Lyrella', 'Petroneis']), raphe: true, stauros: Math.random() < 0.25,
+          w: x => {
+            const u = Math.abs(x) / (R * 0.97);
+            const beak = rostrate ? 1 - 0.4 * clamp((u - 0.7) / 0.3, 0, 1) : 1;
+            return W * envelope(x, R, q) * beak;
+          },
+        });
+      },
+      waisted(R, h) {
+        const W = R / rand(2.2, 3.2), q = rand(2, 3), pinch = rand(0.25, 0.5);
+        return pennateLike(R, h, {
+          genus: pick(['Diploneis', 'Caloneis', 'Navicula']), raphe: true,
+          w: x => W * envelope(x, R, q) * (1 - pinch * Math.exp(-Math.pow(x / (0.2 * R), 2))),
+        });
+      },
+      rod(R, h) {
+        const W = R / rand(9, 15), cap = rand(0, 0.8), mid = Math.random() < 0.5 ? rand(0.2, 0.5) : 0;
+        return pennateLike(R, h, {
+          genus: pick(['Synedra', 'Ulnaria', 'Fragilaria']), midline: true, fan: 0,
+          w: x => W * envelope(x, R, 8)
+            * (1 + cap * Math.exp(-Math.pow((R * 0.97 - Math.abs(x)) / (0.05 * R), 2)))
+            * (1 + mid * Math.exp(-Math.pow(x / (0.08 * R), 2))),
+        });
+      },
+      nodose(R, h) {
+        const W = R / rand(4.5, 7), kk = Math.floor(rand(2, 5));
+        return pennateLike(R, h, {
+          genus: pick(['Terpsinoe', 'Gomphonema', 'Rhabdonema']), raphe: true,
+          w: x => W * envelope(x, R, 4) * (0.58 + 0.42 * Math.abs(Math.cos(kk * Math.PI * x / (2 * R * 0.97)))),
+        });
+      },
+      crescent(R, h) {
+        const W = R / rand(3, 4.5), B = rand(0.12, 0.25) * R;
+        return pennateLike(R, h, {
+          genus: pick(['Cymbella', 'Amphora', 'Encyonema']), raphe: true,
+          bend: x => B * (1 - Math.pow(x / (R * 0.97), 2)) - B * 0.5,
+          w: x => W * envelope(x, R, 1.7),
+        });
+      },
+      sigmoid(R, h) {
+        const W = R / rand(6, 9), S = rand(0.12, 0.22) * R;
+        return pennateLike(R, h, {
+          genus: pick(['Pleurosigma', 'Gyrosigma']), raphe: true, fan: 0.15,
+          bend: x => S * Math.sin(Math.PI * x / (R * 0.97)),
+          w: x => W * envelope(x, R, 1.6),
+        });
+      },
+      surirella(R, h) {
+        const W = R / rand(1.6, 2.4), q = rand(1.8, 2.6), tilt = rand(0.08, 0.22);
+        return pennateLike(R, h, {
+          genus: pick(['Surirella', 'Campylodiscus', 'Petrodictyon']), midline: true, style: 'ribs', fan: rand(0.2, 0.5),
+          w: x => W * envelope(x, R, q) * (1 + tilt * x / R),
+        });
+      },
+  
+      stellate(R, h) {
+        const n = Math.floor(rand(4, 8)), v = rand(0.42, 0.62), pw = rand(1.3, 3.5), rot = rand(0, TAU);
+        const fn = a => R * 0.97 * (v + (1 - v) * Math.pow(Math.abs(Math.cos(n * (a - rot) / 2)), pw));
+        const p = polarPath(fn);
+        const sp = clamp(R * rand(0.035, 0.06), 3.4, 8);
+        const prof = pick([r => 1 - 0.5 * r, r => 0.4 + 0.6 * r, r => 0.7]);
+        const genus = n === 4 ? 'Amphitetras' : n === 5 ? 'Amphipentas' : 'Stictodiscus';
+        return { genus, draw(g) {
+          body(g, p, h, R, false);
+          areolae(g, p, R, h, sp, prof);
+          g.save(); g.globalCompositeOperation = 'lighter';
+          const q = new Path2D(), m = Math.floor(rand(5, 9)), rr = R * rand(0.12, 0.2);
+          for (let i = 0; i < m; i++) { const a = i / m * TAU; dot(q, Math.cos(a) * rr, Math.sin(a) * rr, sp * 0.45); }
+          for (let i = 0; i < n; i++) { const a = rot + i / n * TAU; dot(q, Math.cos(a) * R * 0.86, Math.sin(a) * R * 0.86, sp * 0.6); }
+          g.fillStyle = hsla(h, 70, 80, 0.85); g.fill(q);
+          g.restore();
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+      triradiate(R, h) {
+        const n = Math.random() < 0.72 ? 3 : 4, v = rand(0.2, 0.32), pw = rand(5, 10), rot = rand(0, TAU);
+        const fn = a => {
+          const c = Math.abs(Math.cos(n * (a - rot) / 2));
+          return R * 0.93 * (v + (1 - v) * Math.pow(c, pw)) + R * 0.05 * Math.pow(c, 60);
+        };
+        const p = polarPath(fn, 600);
+        const sp = clamp(R * rand(0.03, 0.045), 3, 6);
+        return { genus: n === 3 ? 'Trinacria' : 'Amphitetras', draw(g) {
+          body(g, p, h, R, false);
+          areolae(g, p, R, h, sp, r => 0.5 + 0.5 * r);
+          g.save(); g.globalCompositeOperation = 'lighter';
+          for (let i = 0; i < n; i++) {
+            const a = rot + i / n * TAU;
+            const o = new Path2D(); o.arc(Math.cos(a) * R * 0.86, Math.sin(a) * R * 0.86, R * 0.055, 0, TAU);
+            g.fillStyle = hsla(h, 60, 30, 0.8); g.fill(o);
+            rim(g, o, h, 1, 4);
+          }
+          const c = new Path2D(); c.arc(0, 0, R * v * 0.6, 0, TAU);
+          rim(g, c, h, 1, 5);
+          g.restore();
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+      lobed(R, h) {
+        const m = Math.floor(rand(10, 24)), petals = Math.floor(rand(3, 9)), proc = Math.floor(rand(3, 7));
+        const fn = a => R * 0.95 * (1 + 0.025 * Math.cos(m * a));
+        const p = polarPath(fn);
+        const sp = clamp(R * rand(0.03, 0.05), 3.2, 7);
+        const pr = R * rand(0.3, 0.42), pw = R * rand(0.1, 0.17);
+        return { genus: pick(['Aulacodiscus', 'Auliscus', 'Eupodiscus']), draw(g) {
+          body(g, p, h, R, false);
+          areolae(g, p, R, h, sp, r => 0.35 + 0.65 * r);
+          g.save();
+          for (let i = 0; i < petals; i++) {
+            const a = i / petals * TAU;
+            const e = new Path2D(); e.ellipse(Math.cos(a) * pr, Math.sin(a) * pr, pw * 1.5, pw, a, 0, TAU);
+            g.fillStyle = hsla(h, 50, 8, 0.7); g.fill(e);
+            rim(g, e, h, 1.2, 5);
+          }
+          g.globalCompositeOperation = 'lighter';
+          for (let i = 0; i < proc; i++) {
+            const a = i / proc * TAU + 0.3;
+            const o = new Path2D(); o.arc(Math.cos(a) * R * 0.8, Math.sin(a) * R * 0.8, R * 0.06, 0, TAU);
+            g.fillStyle = hsla(h, 70, 75, 0.5); g.fill(o);
+            rim(g, o, h, 1, 4);
+          }
+          g.restore();
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+      ring(R, h) {
+        const ri = R * rand(0.42, 0.68), ro = R * 0.96;
+        const p = new Path2D(); p.arc(0, 0, ro, 0, TAU); p.moveTo(ri, 0); p.arc(0, 0, ri, 0, TAU, true);
+        const outer = new Path2D(); outer.arc(0, 0, ro, 0, TAU);
+        const inner = new Path2D(); inner.arc(0, 0, ri, 0, TAU);
+        const sp = clamp(R * rand(0.035, 0.06), 3.2, 7);
+        return { genus: pick(['Cyclotella', 'Melosira', 'Stephanodiscus']), draw(g) {
+          g.fillStyle = hsla(h, 55, 13, 0.95); g.fill(p, 'evenodd');
+          g.save(); g.clip(p, 'evenodd'); g.globalCompositeOperation = 'lighter';
+          const d = new Path2D();
+          const rays = Math.floor(TAU * ro / (sp * 1.1));
+          for (let i = 0; i < rays; i++) {
+            const a = i / rays * TAU;
+            for (let rho = ri + sp * 0.8; rho < ro - sp * 0.5; rho += sp * 0.7) dot(d, Math.cos(a) * rho, Math.sin(a) * rho, sp * 0.16);
+          }
+          g.fillStyle = hsla(h, 65, 72, 0.75); g.fill(d);
+          g.restore();
+          rim(g, outer, h, 2.2, 10);
+          rim(g, inner, h, 1.6, 8);
+        } };
+      },
+      girdle(R, h) {
+        const A = R * 0.8, B = R * rand(0.28, 0.55), horn = Math.random() < 0.7, spines = Math.random() < 0.5;
+        const p = new Path2D(); roundRectPath(p, -A, -B, 2 * A, 2 * B, B * rand(0.15, 0.4));
+        const sp = clamp(B * rand(0.12, 0.18), 3, 7);
+        const valve = A * rand(0.45, 0.65);
+        return { genus: pick(['Biddulphia', 'Isthmia', 'Hemiaulus']), draw(g) {
+          body(g, p, h, R, false);
+          g.save(); g.clip(p); g.globalCompositeOperation = 'lighter';
+          const d = new Path2D();
+          for (const [x, y] of hexGrid(R, sp, 0)) {
+            if (Math.abs(x) < valve) continue;
+            dot(d, x, y, sp * 0.2);
+          }
+          g.fillStyle = hsla(h, 65, 72, 0.75); g.fill(d);
+          g.strokeStyle = hsla(h, 70, 78, 0.35); g.lineWidth = 1;
+          g.beginPath();
+          for (let x = -valve; x <= valve; x += sp * 1.6) { g.moveTo(x, -B); g.lineTo(x, B); }
+          g.stroke();
+          g.strokeStyle = hsla(h, 75, 82, 0.8); g.lineWidth = 1.6;
+          g.beginPath(); g.moveTo(-valve, -B); g.lineTo(-valve, B); g.moveTo(valve, -B); g.lineTo(valve, B); g.stroke();
+          g.restore();
+          g.save(); g.globalCompositeOperation = 'lighter';
+          for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+            if (horn) {
+              const o = new Path2D(); o.ellipse(sx * A * 0.9, sy * (B + B * 0.12), A * 0.07, B * 0.14, 0, 0, TAU);
+              g.fillStyle = hsla(h, 70, 75, 0.6); g.fill(o);
+            }
+            if (spines) {
+              g.strokeStyle = hsla(h, 70, 80, 0.55); g.lineWidth = 1.1;
+              g.beginPath(); g.moveTo(sx * A * 0.9, sy * B);
+              g.lineTo(sx * (A * 0.9 + R * 0.12), sy * (B + R * 0.22)); g.stroke();
+            }
+          }
+          g.restore();
+          rim(g, p, h, 2.2, 10);
+        } };
+      },
+      filament(R, h) {
+        // A living chain: cells strung along a gentle curve, with golden-green chloroplasts
+        const span = R * 0.82, bow = rand(-0.26, 0.26) * R;
+        const P = [];
+        for (let i = 0; i <= 200; i++) {
+          const t = i / 200;
+          P.push([(1 - t) * (1 - t) * -span + t * t * span, 2 * (1 - t) * t * bow * 2]);
+        }
+        const cum = [0];
+        for (let i = 1; i < P.length; i++) cum.push(cum[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+        const L = cum[cum.length - 1];
+        const at = s => {
+          let i = 1; while (i < cum.length - 1 && cum[i] < s) i++;
+          const u = (s - cum[i - 1]) / (cum[i] - cum[i - 1] || 1);
+          return [P[i - 1][0] + (P[i][0] - P[i - 1][0]) * u, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * u,
+                  Math.atan2(P[i][1] - P[i - 1][1], P[i][0] - P[i - 1][0])];
+        };
+        const k = Math.floor(rand(4, 10));
+        const cellLen = L / k, gap = cellLen * rand(0.06, 0.2), cl = cellLen - gap;
+        const ch = Math.min(R * 0.42, cl * rand(0.6, 1.6));
+        const setae = Math.random() < 0.45, hair = R * rand(0.2, 0.42);
+        const chl = rand(68, 100);
+        return { genus: pick(['Fragilaria', 'Chaetoceros', 'Melosira', 'Skeletonema']), draw(g) {
+          if (setae) {
+            g.save(); g.globalCompositeOperation = 'lighter';
+            g.strokeStyle = hsla(h, 50, 75, 0.35); g.lineWidth = 0.8;
+            g.beginPath();
+            for (let i = 1; i < k; i++) {
+              const [x, y, a] = at(i * cellLen);
+              const nx = -Math.sin(a), ny = Math.cos(a);
+              for (const s of [-1, 1]) {
+                const sw = rand(-0.4, 0.4);
+                g.moveTo(x, y);
+                g.quadraticCurveTo(x + nx * s * hair * 0.5, y + ny * s * hair * 0.5,
+                                   x + (nx * s + Math.cos(a) * sw) * hair, y + (ny * s + Math.sin(a) * sw) * hair);
+              }
+            }
+            g.stroke(); g.restore();
+          }
+          for (let i = 0; i < k; i++) {
+            const [x, y, a] = at((i + 0.5) * cellLen);
+            g.save(); g.translate(x, y); g.rotate(a);
+            const c = new Path2D(); roundRectPath(c, -cl / 2, -ch / 2, cl, ch, Math.min(cl, ch) * 0.3);
+            g.fillStyle = hsla(h, 45, 14, 0.9); g.fill(c);
+            g.save(); g.clip(c); g.globalCompositeOperation = 'lighter';
+            const blobs = Math.random() < 0.5 ? 1 : 2;
+            for (let b = 0; b < blobs; b++) {
+              const e = new Path2D();
+              const bx = blobs === 1 ? rand(-0.08, 0.08) * cl : (b ? 1 : -1) * cl * 0.2;
+              e.ellipse(bx, rand(-0.1, 0.1) * ch, cl * (blobs === 1 ? 0.3 : 0.17), ch * 0.32, rand(-0.3, 0.3), 0, TAU);
+              g.fillStyle = hsla(chl, 75, 45, 0.6); g.fill(e);
+            }
+            const dd = new Path2D();
+            for (let j = 0; j < 6; j++) dot(dd, rand(-0.4, 0.4) * cl, rand(-0.35, 0.35) * ch, Math.min(cl, ch) * 0.05);
+            g.fillStyle = hsla(chl, 80, 70, 0.6); g.fill(dd);
+            g.restore();
+            rim(g, c, h, 1.4, 6);
+            g.restore();
+          }
+        } };
+      },
+    });
+  
+    const FORM_WEIGHTS = [
+      ['centric', 13], ['polygon', 11], ['radial', 9], ['star', 5], ['pennate', 5], ['chain', 3],
+      ['stellate', 9], ['triradiate', 6], ['lemon', 8], ['waisted', 5], ['rod', 5], ['nodose', 4],
+      ['crescent', 4], ['sigmoid', 4], ['surirella', 5], ['lobed', 6], ['ring', 4], ['girdle', 6], ['filament', 7],
+    ];
+    const MIN_FOR = { pennate: 55, chain: 55, rod: 80, nodose: 70, sigmoid: 80, crescent: 55, filament: 95,
+                      girdle: 50, triradiate: 50, lemon: 45, waisted: 50, surirella: 45 };
+    function pickForm(R) {
+      let total = 0; for (const [, w] of FORM_WEIGHTS) total += w;
+      for (let tries = 0; tries < 30; tries++) {
+        let x = Math.random() * total;
+        for (const [f, w] of FORM_WEIGHTS) {
+          if ((x -= w) <= 0) { if (R >= (MIN_FOR[f] || 0)) return f; break; }
+        }
+      }
+      return 'centric';
+    }
+
+    // ---------- Engine for the strip ----------
+    const LEVELS = 5, BLUR_MAX = 64;
+    const FILTER_OK = (() => {
+      const g = document.createElement('canvas').getContext('2d');
+      if (!('filter' in g)) return false;
+      g.filter = 'blur(1px)';
+      return g.filter === 'blur(1px)';
+    })();
+    function blurLevels(cv, inner) {
+      const levels = [cv];
+      let src = cv;
+      for (let i = 1; i <= LEVELS; i++) {
+        const c = document.createElement('canvas');
+        c.width = Math.max(2, Math.ceil(src.width / 2)); c.height = Math.max(2, Math.ceil(src.height / 2));
+        const g = c.getContext('2d');
+        if (FILTER_OK) g.filter = 'blur(1px)';
+        g.drawImage(src, 0, 0, c.width, c.height);
+        g.filter = 'none';
+        g.globalCompositeOperation = 'destination-in';
+        const rr = c.width / 2;
+        const m = g.createRadialGradient(rr, rr, rr * inner, rr, rr, rr * 0.995);
+        m.addColorStop(0, 'rgba(0,0,0,1)'); m.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = m; g.fillRect(0, 0, c.width, c.height);
+        levels.push(c); src = c;
+      }
+      return levels;
+    }
+
+    const cv = stage.canvas('mix-blend-mode:plus-lighter');
+    const ctx = cv.getContext('2d');
+    let W = 0, H = 0, dpr = 1, full = false;
+    let ws = 1, WW = 1920, WH = 1080, K = 1, sprScale = 1;   // world→css scale, world size, device scale
+    let MIN_R = 30, MAX_R = 200, countScale = 1;
+    let specimens = [], silt = [], t = 0, nextSpawn = 0.2, seeded = false;
+    const LEVEL_COUNTS = [38, 62, 90, 122, 158];
+    let level = 1, popFrom = 0, popTo = 0, popT0 = 0, fade = 1.5;
+    const DEPTHS = [0.12, 0.38, 0.62, 0.88];
+    let focus = DEPTHS[1], fFrom = focus, fTo = focus, fT = 1, fDur = 3, fHold = 6;
+    const easeIO3 = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
+    function configure() {
+      if (full) {
+        // The original microscope field, scaled so its height fills the screen
+        ws = H / 1080; MIN_R = 30; MAX_R = 200; fade = 5;
+        WW = W / ws; WH = 1080; countScale = WW * WH / (1920 * 1080);
+      } else {
+        // Strip: the largest specimen nearly fills the band's height
+        WH = 330; ws = H / WH; MIN_R = 45; MAX_R = 150; fade = 1.5;
+        WW = W / ws; countScale = WW * WH / (1920 * 1080) * 0.55;
+      }
+      K = ws * dpr;
+      sprScale = Math.min(2, Math.max(0.12, K));
+      silt = Array.from({ length: Math.round(140 * countScale) }, () => [rand(0, WW), rand(0, WH), rand(0.4, 1.4) / ws * (full ? 1 : 0.35), rand(0.05, 0.22)]);
+    }
+    const countFor = n => Math.max(6, Math.round(LEVEL_COUNTS[n - 1] * countScale));
+    function popTarget() {
+      const u = Math.max(0, Math.min(1, (t - popT0) / fade));
+      return popFrom + (popTo - popFrom) * (u * u * (3 - 2 * u));
+    }
+    function setLevel(n) {
+      n = Math.max(1, Math.min(5, n));
+      if (n === level && popTo === countFor(n)) return;
+      popFrom = popTarget(); popTo = countFor(n); popT0 = t; level = n;
+    }
+    function updateFocus(dt) {
+      if (fT < 1) {
+        fT = Math.min(1, fT + dt / fDur);
+        focus = fFrom + (fTo - fFrom) * easeIO3(fT);
+        if (fT >= 1) fHold = rand(4, 9);
+      } else {
+        fHold -= dt;
+        if (fHold <= 0) {
+          fFrom = focus;
+          let nxt; do { nxt = pick(DEPTHS); } while (Math.abs(nxt - focus) < 0.05);
+          fTo = nxt; fT = 0; fDur = rand(2.2, 3.6) * (0.7 + Math.abs(fTo - fFrom));
+        }
+      }
+    }
+    function makeSprite(R, form) {
+      const pad = 52;
+      const size = Math.max(4, Math.ceil((2 * R + 2 * pad) * sprScale));
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      g.setTransform(sprScale, 0, 0, sprScale, size / 2, size / 2);
+      form.draw(g);
+      return { half: R + pad, levels: blurLevels(c, (R + 8) / (R + pad)) };
+    }
+    function spawn(now) {
+      const maxR = MAX_R * (1 - 0.08 * (level - 1));
+      const R = MIN_R + (maxR - MIN_R) * Math.pow(Math.random(), 1.7);
+      const h = hueFor();
+      const form = FORMS[pickForm(R)](R, h);
+      const nimble = Math.sqrt(70 / R);
+      const speed = rand(4, 20) * nimble, dir = rand(0, TAU);
+      specimens.push({
+        x: rand(0, WW), y: full ? rand(0, WH) : rand(R * 0.9, WH - R * 0.9), R,
+        z: pick(DEPTHS) + rand(-0.05, 0.05),
+        sprite: makeSprite(R, form),
+        vx: Math.cos(dir) * speed, vy: Math.sin(dir) * speed * (full ? 1 : 0.25),
+        ang: rand(0, TAU), spin: (Math.random() < 0.5 ? -1 : 1) * rand(0.01, 0.15) * nimble,
+        born: now, fadeIn: rand(3, 5) * (full ? 1 : 0.6), life: rand(25, 60), fadeOut: rand(4, 6)
+      });
+    }
+
+    return {
+      resize(w, h, d, isFull) {
+        const changed = isFull !== full || d !== dpr || h !== H;
+        W = w; H = h; dpr = d; full = isFull;
+        cv.width = W * dpr; cv.height = H * dpr;
+        configure();
+        if (changed || !seeded) { specimens = []; seeded = false; }
+      },
+      step(dtMs, lv, still) {
+        const dt = Math.min(0.1, dtMs / 1000);
+        // Activity: 1 when the page is still, up to 5 when scrolling hard
+        setLevel(1 + Math.round(Math.min(1, lv) * 4));
+        const speedMult = still ? 0 : 1 + 1.5 * Math.min(1, lv);
+        t += dt;
+        if (!seeded) {
+          seeded = true;
+          popFrom = popTo = countFor(level); popT0 = t;
+          // Arrive with a field already in view, at mixed ages
+          for (let i = 0; i < popTo; i++) { spawn(t); const s = specimens[specimens.length - 1]; s.born -= rand(s.fadeIn, s.fadeIn + s.life * 0.6); }
+        }
+        const want = popTarget(), changing = t - popT0 < fade;
+        let alive = 0; for (const s of specimens) if (!s.dying) alive++;
+        if (alive < want - 0.5 && (changing || t >= nextSpawn)) { spawn(t); nextSpawn = t + rand(0.15, 0.6); }
+        else if (alive > want + 0.5) {
+          const pool = specimens.filter(s => !s.dying);
+          const s = pool[Math.floor(Math.random() * pool.length)];
+          if (s) { s.retire = t; s.dying = true; }
+        }
+        if (!still) updateFocus(dt);
+        for (const s of specimens) {
+          s.ang += s.spin * dt * speedMult;
+          s.x += s.vx * dt * speedMult; s.y += s.vy * dt * speedMult;
+          const m = s.R + 30;
+          if (s.x < -m) s.x += WW + 2 * m; else if (s.x > WW + m) s.x -= WW + 2 * m;
+          if (full) { if (s.y < -m) s.y += WH + 2 * m; else if (s.y > WH + m) s.y -= WH + 2 * m; }
+          else if ((s.y < s.R * 0.9 && s.vy < 0) || (s.y > WH - s.R * 0.9 && s.vy > 0)) s.vy = -s.vy;   // stay inside the strip
+        }
+
+        ctx.setTransform(K, 0, 0, K, 0, 0);
+        ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+        ctx.clearRect(0, 0, WW, WH);
+        ctx.fillStyle = '#9fd8e8';
+        for (const [x, y, r, a] of silt) { ctx.globalAlpha = a; ctx.fillRect(x, y, r, r); }
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = specimens.length - 1; i >= 0; i--) {
+          const s = specimens[i], age = t - s.born;
+          let a;
+          if (age < s.fadeIn) a = age / s.fadeIn;
+          else if (age < s.fadeIn + s.life) a = 1;
+          else { a = 1 - (age - s.fadeIn - s.life) / s.fadeOut; s.dying = true; }
+          if (s.retire !== undefined) a = Math.min(a, (age < s.fadeIn ? age / s.fadeIn : 1) * (1 - (t - s.retire) / (full ? 2.5 : 1.2)));
+          if (s.dying && a <= 0) { specimens.splice(i, 1); continue; }
+          if (a <= 0) continue;
+          a = a * a * (3 - 2 * a);
+          const d = Math.abs(s.z - focus);
+          const grow = (0.94 + 0.06 * Math.min(1, age / s.fadeIn)) * (1 + 0.05 * Math.min(1, d / 0.5));
+          const c = Math.cos(s.ang) * grow, sn = Math.sin(s.ang) * grow;
+          ctx.setTransform(K * c, K * sn, -K * sn, K * c, K * s.x, K * s.y);
+          const blurPx = Math.max(0, d - 0.015) * BLUR_MAX * sprScale;
+          const lvB = Math.min(LEVELS, Math.log2(1 + blurPx));
+          const l0 = Math.min(LEVELS, Math.floor(lvB)), fr = lvB - l0;
+          const dim = 1 - 0.4 * Math.min(1, d / 0.55);
+          const half = s.sprite.half, lev = s.sprite.levels;
+          ctx.globalAlpha = a * dim * (1 - fr);
+          ctx.drawImage(lev[l0], -half, -half, half * 2, half * 2);
+          if (fr > 0.01 && l0 < LEVELS) { ctx.globalAlpha = a * dim * fr; ctx.drawImage(lev[l0 + 1], -half, -half, half * 2, half * 2); }
+        }
+        ctx.globalAlpha = 1;
+      }
+    };
+  }
+
+
   /* ================= Choosing a band ================= */
-  const BANDS = { bokeh: bokehBand, hexagons: hexBand, lights: lightsBand };
+  const BANDS = { bokeh: bokehBand, hexagons: hexBand, lights: lightsBand, diatoms: diatomBand };
   function choose() {
     const names = Object.keys(BANDS);
     const forced = new URLSearchParams(location.search).get('band');
     if (forced && BANDS[forced]) return forced;
     let prev = null;
     try { prev = localStorage.getItem('tl-band'); } catch (e) {}
-        // Shuffle-bag: a random order of all bands, each shown once before reshuffling
+    // Shuffle-bag: a random order of all bands, each shown once before reshuffling
     let bag = [];
     try { bag = JSON.parse(localStorage.getItem('tl-band-bag') || '[]').filter(n => BANDS[n]); } catch (e) {}
     if (!bag.length) {
