@@ -1503,3 +1503,16 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+/* Also load resume-views.js (short/long views, standards strip, two downloads) when the page
+   doesn't include it — so a rebuilt index.html without that script line keeps the features. */
+(() => {
+  const load = () => {
+    if (window.__resumeViews || document.querySelector('script[src*="resume-views.js"]')) return;
+    const s = document.createElement('script');
+    s.src = 'resume-views.js';
+    document.head.appendChild(s);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+  else load();
+})();
