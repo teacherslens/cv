@@ -47,6 +47,9 @@
     hobbit:          { n: 4, id: '1tfmHUDHCQcznLuP0w1p3mnYXkVFDuWww', title: 'Reading forward, reading backward' },
     studio:          { n: 5, id: '1CkfEkQWq4Nw2mbIN6KAN2bOridXU_w_-', title: 'Global Learning Studio' },
     readingCulture:  { n: 6, id: '17LwwVWXAP6cfrtt9W1k4jthcy3C5F1ne', title: 'Building a reading culture' },
+    letters:         { n: 6, id: '1KFb8H7U8NuxcXldgq_1p87IVcZNV8Pl7', title: 'Letters to 4.4 families' },
+    firstSixWeeks:   { n: 7, id: '1nv09FMTJGdBAh-oXzKP9MZpD2RuOG5jg', title: 'The first six weeks' },
+    classInMotion:   { n: 7, id: '1pRub7rQFX_Jy63uAizVhE3wxlHD6pQpw', title: 'Our Class in Motion' },
   };
   const LONG_TAGS = [
     { sel: '.role li', text: 'Designed the full curriculum, scope, and sequence', ev: ['hobbit'] },
@@ -56,6 +59,12 @@
     { sel: '.role li', text: 'Words Their Way', ev: ['wordsTheirWay'] },
     { sel: '.role h3', text: 'Co-Founder, Producer', ev: ['podcasting'] },
     { sel: '.role .sub', text: 'Global Learning Studio', ev: ['studio'] },
+    { sel: '.role h3', text: 'Fourth Grade Teacher', ev: ['letters'] },
+    { sel: '.role h3', text: 'Experiential Learning Coordinator', ev: ['firstSixWeeks', 'classInMotion'] },
+    { sel: '#media h4', text: 'Class Blogs', ev: ['classInMotion', 'letters'] },
+    { sel: '#media h4', text: 'First Six Weeks of School', ev: ['firstSixWeeks'] },
+    { sel: '#media h4', text: 'Journeys in Podcasting', ev: ['podcasting'] },
+    { sel: '#media h4', text: 'Global Learning Studio', ev: ['studio'] },
   ];
   const IN_PROGRESS_HTML =
     '<strong>In progress</strong> — IB Certificate in Leadership Practice, Western University (to March 2027) · ' +
@@ -212,7 +221,7 @@
       if (nav && haveShort) {
         nav.classList.add('rv-nav-long');
         const navShort = h('nav', { class: 'rv-nav-short' },
-          '<a href="#s-profile">Profile</a><a href="#s-experience">Experience</a><a href="#s-education">Education</a><a href="#s-development">Development</a>');
+          '<a href="#s-profile">Profile</a><a href="#s-education">Education</a><a href="#s-experience">Experience</a><a href="#s-development">Development</a>');
         nav.after(navShort);
       }
       const oldBtn = bar.querySelector('.btn');
@@ -248,7 +257,7 @@
 
     // long view: same evidence tags and links as the short view
     LONG_TAGS.forEach(rule => {
-      const el = [...document.querySelectorAll('.rv-long-part ' + rule.sel)].find(x => x.textContent.includes(rule.text));
+      const el = [...document.querySelectorAll(rule.sel)].find(x => x.closest('.rv-long-part') && x.textContent.includes(rule.text));
       if (!el || el.querySelector('.ev')) return;
       const frag = document.createDocumentFragment();
       rule.ev.forEach(k => frag.append(evTag(k)));
