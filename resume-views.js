@@ -6,8 +6,10 @@
      each opening that standard's evidence folder in Google Drive.
    - Short view (default): loads short-cv.html, the two-page role resume rendered from the same
      data as the PDF. The long view is the page build.sh generates.
-   - Toggle between the two (menu bar and hero); ?view=long opens the long view directly.
-   - Two downloads everywhere the page had one: short PDF and long PDF.
+   - Toggle between the two in the menu bar; ?view=long opens the long view directly.
+   - Downloads: the menu bar's button follows the view (icon only on phones); the closing section
+     has both the short and long PDF. The hero has no toggle or downloads (removed 23 Nov 2026 so
+     the page reaches the profile sooner).
    - Long view: adds the same evidence tags and links as the short view.
    - Every web link and PDF opens in a new tab (in-page anchors and email links stay as they are).
    - Hero title line: TAGLINE in both views (set 23 Nov 2026; replaces the role title from short-cv.html
@@ -96,11 +98,12 @@
   .rv-toggle button[aria-pressed="true"]{background:var(--accent);color:#0b0b0d}
   .rv-bar-right{display:flex;align-items:center;gap:10px}
   .rv-bar-right .btn-sm{padding:7px 13px}
-  @media(max-width:820px){.rv-bar-right .btn-sm{display:none}}
+  @media(max-width:820px){.rv-bar-right .btn-sm{padding:7px 10px;gap:0}.rv-bar-right .btn-sm .dl-l{display:none}}
   body.rv-short .hero .tagline{max-width:40ch}
+  .hero .meta:last-child{margin-bottom:0}
   .bar-name{white-space:nowrap}
   .rv-dl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-  .rv-hero-toggle{margin:0 0 18px}
+  .close .rv-dl{justify-content:center}
   section{scroll-margin-top:100px}
 
   /* views */
@@ -152,7 +155,7 @@
     return el;
   };
   const DL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-  const dlButton = (href, label, small) => h('a', { class: 'btn' + (small ? ' btn-sm' : ''), href, download: '' }, DL_ICON + label);
+  const dlButton = (href, label, small) => h('a', { class: 'btn' + (small ? ' btn-sm' : ''), href, download: '' }, DL_ICON + `<span class="dl-l">${label}</span>`);
   const evTag = (key) => {
     const e = EV[key];
     return h('a', { class: `ev ev-${e.n} ev-tagonly`, href: C.FILE + e.id + '/view', title: `Standard ${e.n} evidence: ${e.title} (opens in a new tab)`,
@@ -171,6 +174,8 @@
     if (barDl) {
       barDl.href = v === 'short' ? C.SHORT_PDF : C.LONG_PDF;
       barDl.lastChild.textContent = v === 'short' ? 'Short PDF' : 'Long PDF';
+      barDl.setAttribute('aria-label', v === 'short' ? 'Download short resume (PDF)' : 'Download long CV (PDF)');
+      barDl.title = barDl.getAttribute('aria-label');
     }
     const tl = document.querySelector('.hero .tagline');
     if (tl) tl.textContent = TAGLINE;
@@ -238,12 +243,12 @@
       bar.append(strip);
     }
 
-    // hero and closing: two download buttons (+ the toggle in the hero)
-    document.querySelectorAll('.hero .btn, .close .btn').forEach(btn => {
+    // hero: no download button (the bar and closing section have them); closing: short and long PDFs
+    document.querySelectorAll('.hero .btn').forEach(btn => btn.remove());
+    document.querySelectorAll('.close .btn').forEach(btn => {
       const row = h('div', { class: 'rv-dl' });
       row.append(dlButton(C.SHORT_PDF, 'Download short (PDF)'), dlButton(C.LONG_PDF, 'Download long (PDF)'));
       btn.replaceWith(row);
-      if (row.closest('.hero') && haveShort) row.before(makeToggle('rv-hero-toggle'));
     });
 
     // long view: same evidence tags and links as the short view
