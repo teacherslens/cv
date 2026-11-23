@@ -10,6 +10,8 @@
    - Two downloads everywhere the page had one: short PDF and long PDF.
    - Long view: adds the same evidence tags and links as the short view.
    - Every web link and PDF opens in a new tab (in-page anchors and email links stay as they are).
+   - Hero title line: TAGLINE in both views (set 23 Nov 2026; replaces the role title from short-cv.html
+     and the generated long-view tagline, so a rebuild of either doesn't bring them back).
 
    Loaded by: <script src="resume-views.js" defer></script> in index.html. bokeh-band.js also
    loads it if a rebuilt index.html leaves that line out. */
@@ -73,6 +75,7 @@
     '(September–November 2026); half credit toward the PTC Certificate in International School Leadership · ' +
     '<a href="https://teacherslens.github.io/meridian-dashboard/#planning">Meridian recruitment dashboard</a>';
   const SPOTIFY = 'https://open.spotify.com/show/0mg3PyAMUUHO6HxHD4oJKJ';
+  const TAGLINE = 'Educator, leader, wicked problem solver';
 
   /* ---------------- styles ---------------- */
   const css = `
@@ -98,8 +101,6 @@
   .bar-name{white-space:nowrap}
   .rv-dl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
   .rv-hero-toggle{margin:0 0 18px}
-  .rv-note{font-size:12.5px;color:var(--ink-faint);margin:18px 0 0;max-width:62ch;line-height:1.6}
-  .rv-note .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:1px;vertical-align:baseline}
   section{scroll-margin-top:100px}
 
   /* views */
@@ -135,7 +136,7 @@
   ${STD.map(s => `.ev-${s.n} .ev-n{background:${s.chip}} .ev-${s.n} .ev-l{color:${s.tint}}`).join('\n  ')}
 
   @media print{
-    .rv-strip,.rv-toggle,.rv-dl,.rv-note{display:none!important}
+    .rv-strip,.rv-toggle,.rv-dl{display:none!important}
     .ev .ev-n{color:#000;background:none!important;border:1px solid #999}
     .ev .ev-l{color:#111!important}
   }`;
@@ -172,7 +173,7 @@
       barDl.lastChild.textContent = v === 'short' ? 'Short PDF' : 'Long PDF';
     }
     const tl = document.querySelector('.hero .tagline');
-    if (tl) tl.textContent = v === 'short' && tl.dataset.role ? tl.dataset.role : tl.dataset.orig || tl.textContent;
+    if (tl) tl.textContent = TAGLINE;
     if (push) {
       const u = new URL(location.href);
       if (v === 'long') u.searchParams.set('view', 'long'); else u.searchParams.delete('view');
@@ -197,7 +198,6 @@
   function setup(shortHtml) {
     const main = document.querySelector('main');
     const bar = document.querySelector('.bar');
-    const hero = document.querySelector('.hero');
 
     // mark the generated (long) content
     if (main) [...main.children].forEach(el => { if (!el.classList.contains('close')) el.classList.add('rv-long-part'); });
@@ -206,11 +206,7 @@
     if (main && shortHtml) {
       const holder = h('div', {}, shortHtml);
       const short = holder.querySelector('#rv-short');
-      if (short) {
-        main.prepend(short);
-        const tl = hero && hero.querySelector('.tagline');
-        if (tl) { tl.dataset.orig = tl.textContent; tl.dataset.role = short.dataset.roleTitle || ''; }
-      }
+      if (short) main.prepend(short);
     }
     const haveShort = !!document.getElementById('rv-short');
     if (!haveShort) view = 'long';
@@ -242,17 +238,12 @@
       bar.append(strip);
     }
 
-    // hero and closing: two download buttons (+ toggle and a note in the hero)
+    // hero and closing: two download buttons (+ the toggle in the hero)
     document.querySelectorAll('.hero .btn, .close .btn').forEach(btn => {
       const row = h('div', { class: 'rv-dl' });
       row.append(dlButton(C.SHORT_PDF, 'Download short (PDF)'), dlButton(C.LONG_PDF, 'Download long (PDF)'));
       btn.replaceWith(row);
-      if (row.closest('.hero')) {
-        if (haveShort) row.before(makeToggle('rv-hero-toggle'));
-        const sw = STD.map(s => `<span class="sw" style="background:${s.tint}"></span>`).join('');
-        row.after(h('p', { class: 'rv-note' },
-          `${sw}&ensp;The coloured strip opens my evidence portfolio, organized by the PTC Standards for International School Principals. Numbered tags in the text open single pieces of evidence.`));
-      }
+      if (row.closest('.hero') && haveShort) row.before(makeToggle('rv-hero-toggle'));
     });
 
     // long view: same evidence tags and links as the short view
