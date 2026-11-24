@@ -56,6 +56,7 @@
     letters:         { n: 6, id: '1KFb8H7U8NuxcXldgq_1p87IVcZNV8Pl7', title: 'Letters to 4.4 families' },
     firstSixWeeks:   { n: 7, id: '1nv09FMTJGdBAh-oXzKP9MZpD2RuOG5jg', title: 'The first six weeks' },
     classInMotion:   { n: 7, id: '1pRub7rQFX_Jy63uAizVhE3wxlHD6pQpw', title: 'Our Class in Motion' },
+    teachersLens:    { n: 4, id: '1ALvXL_jy_uKgEvQ9pATVwpReJCnFw8PB', title: "The Teacher's Lens" },
   };
   const LONG_TAGS = [
     { sel: '.role li', text: 'Designed the full curriculum, scope, and sequence', ev: ['hobbit'] },
@@ -71,6 +72,7 @@
     { sel: '#media h4', text: 'First Six Weeks of School', ev: ['firstSixWeeks'] },
     { sel: '#media h4', text: 'Journeys in Podcasting', ev: ['podcasting'] },
     { sel: '#media h4', text: 'Global Learning Studio', ev: ['studio'] },
+    { sel: '#media h4', text: "Teacher's Lens", ev: ['teachersLens'] },
   ];
   const IN_PROGRESS_HTML =
     '<strong>In progress</strong> — IB Certificate in Leadership Practice, Western University (to March 2027) · ' +
