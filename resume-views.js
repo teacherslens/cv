@@ -108,14 +108,14 @@
   .close .rv-dl{justify-content:center}
 
   /* hero bar: toggle, two downloads and the colour key in one row */
-  .hero{padding-bottom:40px}
+  .hero{padding-top:18px;padding-bottom:40px}
   .rv-hero-bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 10px;margin-top:40px}
   .rv-hero-bar .rv-toggle button{padding:8px 13px}
   .rv-hero-bar .btn-sm{padding:8px 15px}
   .rv-hero-bar .rv-note{flex:1 1 300px;margin:0 0 0 12px;font-size:12px;line-height:1.5;color:var(--ink-faint)}
   .rv-note .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:2px;vertical-align:0}
   @media(max-width:760px){
-    .hero{padding-bottom:32px}
+    .hero{padding-top:22px;padding-bottom:32px}
     .rv-hero-bar{margin-top:32px}
     .rv-hero-bar .rv-note{flex-basis:100%;margin:2px 0 0}
   }
