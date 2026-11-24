@@ -8,8 +8,10 @@
      data as the PDF. The long view is the page build.sh generates.
    - Toggle between the two in the menu bar; ?view=long opens the long view directly.
    - Downloads: the menu bar's button follows the view (icon only on phones); the closing section
-     has both the short and long PDF. The hero has no toggle or downloads (removed 23 Nov 2026 so
-     the page reaches the profile sooner).
+     has both the short and long PDF.
+   - Hero bar (23 Nov 2026): one row under the contact lines, across the full width, with the
+     Short/Long toggle, the two PDF downloads and the colour-key note, spaced evenly between the
+     contact lines and the hero's bottom rule.
    - Long view: adds the same evidence tags and links as the short view.
    - Every web link and PDF opens in a new tab (in-page anchors and email links stay as they are).
    - Hero title line: TAGLINE in both views (set 23 Nov 2026; replaces the role title from short-cv.html
@@ -104,6 +106,19 @@
   .bar-name{white-space:nowrap}
   .rv-dl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
   .close .rv-dl{justify-content:center}
+
+  /* hero bar: toggle, two downloads and the colour key in one row */
+  .hero{padding-bottom:40px}
+  .rv-hero-bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 10px;margin-top:40px}
+  .rv-hero-bar .rv-toggle button{padding:8px 13px}
+  .rv-hero-bar .btn-sm{padding:8px 15px}
+  .rv-hero-bar .rv-note{flex:1 1 300px;margin:0 0 0 12px;font-size:12px;line-height:1.5;color:var(--ink-faint)}
+  .rv-note .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:2px;vertical-align:0}
+  @media(max-width:760px){
+    .hero{padding-bottom:32px}
+    .rv-hero-bar{margin-top:32px}
+    .rv-hero-bar .rv-note{flex-basis:100%;margin:2px 0 0}
+  }
   section{scroll-margin-top:100px}
 
   /* views */
@@ -139,7 +154,7 @@
   ${STD.map(s => `.ev-${s.n} .ev-n{background:${s.chip}} .ev-${s.n} .ev-l{color:${s.tint}}`).join('\n  ')}
 
   @media print{
-    .rv-strip,.rv-toggle,.rv-dl{display:none!important}
+    .rv-strip,.rv-toggle,.rv-dl,.rv-hero-bar{display:none!important}
     .ev .ev-n{color:#000;background:none!important;border:1px solid #999}
     .ev .ev-l{color:#111!important}
   }`;
@@ -243,8 +258,18 @@
       bar.append(strip);
     }
 
-    // hero: no download button (the bar and closing section have them); closing: short and long PDFs
+    // hero: one bar under the contact lines (toggle, two downloads, colour key); closing: short and long PDFs
     document.querySelectorAll('.hero .btn').forEach(btn => btn.remove());
+    const heroGrid = document.querySelector('.hero .hero-grid') || document.querySelector('.hero .wrap');
+    if (heroGrid) {
+      const heroBar = h('div', { class: 'rv-hero-bar wrap' });
+      if (haveShort) heroBar.append(makeToggle('', false));
+      heroBar.append(dlButton(C.SHORT_PDF, 'Short PDF', true), dlButton(C.LONG_PDF, 'Long PDF', true));
+      const sw = STD.map(s => `<span class="sw" style="background:${s.tint}"></span>`).join('');
+      heroBar.append(h('p', { class: 'rv-note' },
+        `${sw}&ensp;The coloured strip opens my evidence by PTC standard; numbered tags open single pieces.`));
+      heroGrid.after(heroBar);
+    }
     document.querySelectorAll('.close .btn').forEach(btn => {
       const row = h('div', { class: 'rv-dl' });
       row.append(dlButton(C.SHORT_PDF, 'Download short (PDF)'), dlButton(C.LONG_PDF, 'Download long (PDF)'));
