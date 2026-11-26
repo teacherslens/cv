@@ -74,6 +74,33 @@
     { sel: '#media h4', text: 'Global Learning Studio', ev: ['studio'] },
     { sel: '#media h4', text: "Teacher's Lens", ev: ['teachersLens'] },
   ];
+  // Long view, Core Professional Skills: chips that a portfolio artifact documents become evidence links.
+  // Each listed artifact gets its numbered tag; the chip's label opens the first one.
+  // Checked against the artifact PDFs' text on 26 Nov 2026. Chips with no artifact yet stay plain.
+  const SKILL_EV = {
+    'Literacy Intervention':                      ['readingToolkit', 'wordsTheirWay'],
+    'Balanced Literacy':                          ['readingCulture'],
+    'Writers Workshop':                           ['translanguaging', 'hobbit'],
+    'Socratic Seminar':                           ['letters', 'teachersLens'],
+    'Project-Based Learning':                     ['teachersLens'],
+    'Interdisciplinary Curriculum Design':        ['hobbit', 'teachersLens'],
+    'Differentiated Instruction':                 ['wordsTheirWay', 'readingToolkit'],
+    'English Language Learner Support':           ['translanguaging', 'readingToolkit'],
+    'Inquiry-Based Learning':                     ['teachersLens'],
+    'Translanguaging':                            ['translanguaging'],
+    'Pre-Service Teacher Mentoring & Assessment': ['observation'],
+    'Media Literacy':                             ['classInMotion', 'teachersLens'],
+    'AI in Education':                            ['readingToolkit', 'hobbit', 'translanguaging'],
+    'Documentary Production':                     ['firstSixWeeks'],
+    'Podcast Production':                         ['podcasting'],
+    'Learning Space Design':                      ['studio'],
+    'Reggio Emilia–Inspired Documentation':       ['firstSixWeeks', 'teachersLens'],
+    'Active Learning Spaces':                     ['studio'],
+    'Student Voice':                              ['readingCulture', 'letters'],
+    'Family Communication':                       ['classInMotion', 'letters'],
+    'Restorative Practices':                      ['letters'],
+    'Professional Development Facilitation':      ['studio', 'podcasting'],
+  };
   const IN_PROGRESS_HTML =
     '<strong>In progress</strong> — IB Certificate in Leadership Practice, Western University (to March 2027) · ' +
     '<a href="https://teacherslens.github.io/minimal-viable-classroom/index.html#model">Minimal Viable Classroom</a>' +
@@ -154,6 +181,15 @@
   .ev-tagonly{margin-right:2px}
   .ev-tagonly .ev-n{margin-right:4px}
   ${STD.map(s => `.ev-${s.n} .ev-n{background:${s.chip}} .ev-${s.n} .ev-l{color:${s.tint}}`).join('\n  ')}
+
+  /* skill chips that open evidence (long view) */
+  .tags .rv-skill{display:inline-flex;align-items:center;padding:4px 13px 4px 6px;color:var(--ink)}
+  .tags .rv-skill:hover{border-color:var(--t);color:var(--ink)}
+  .tags .rv-skill .ev-tagonly{margin-right:0}
+  .tags .rv-skill span.ev-n{border:0;margin-right:3px;color:#fff}
+  .tags .rv-skill a.rv-skill-l{color:var(--ink);margin-left:4px}
+  .tags .rv-skill a.rv-skill-l:hover{text-decoration:underline;text-underline-offset:3px}
+  .tags > span:not(.rv-skill):hover{border-color:var(--rule);color:var(--ink-dim)}
 
   @media print{
     .rv-strip,.rv-toggle,.rv-dl,.rv-hero-bar{display:none!important}
@@ -285,6 +321,16 @@
       const frag = document.createDocumentFragment();
       rule.ev.forEach(k => frag.append(evTag(k)));
       el.prepend(frag);
+    });
+    document.querySelectorAll('#skills .tags > span').forEach(chip => {
+      const keys = SKILL_EV[chip.textContent.trim()];
+      if (!keys) return;
+      const first = EV[keys[0]];
+      const box = h('span', { class: 'rv-skill', style: `--t:${STD[first.n - 1].tint}` });
+      keys.forEach(k => box.append(evTag(k)));
+      box.append(h('a', { class: 'rv-skill-l', href: C.FILE + first.id + '/view',
+        title: `Standard ${first.n} evidence: ${first.title} (opens in a new tab)` }, chip.innerHTML));
+      chip.replaceWith(box);
     });
     const prog = [...document.querySelectorAll('.rv-long-part .prose p')].find(p => /^\s*In progress/.test(p.textContent));
     if (prog) prog.innerHTML = IN_PROGRESS_HTML;
